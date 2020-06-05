@@ -3,6 +3,7 @@ cscope*
 tags
 *.swp
 *.swo
+Dockerfile.grpc
 Dockerfile.ndm
 Dockerfile.ndo
 Dockerfile.exporter

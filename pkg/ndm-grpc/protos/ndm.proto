@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package ndm;
+
+// Might need add github.com/openebs/node-disk-manager and change the path of this file to avoid depreciation
+option go_package="ndm";
+
+
+// This service can return generic information about nodes
+service Info {
+    rpc FindVersion (Null) returns (VersionInfo);
+    rpc FindNodeName(Null) returns (NodeName) ;
+  }
+
+// This service returns status of ISCSI
+service ISCSI{
+    rpc Status(Null) returns (ISCSIStatus);
+  }
+
+
+message ISCSIStatus{
+  bool Status = 1 ;
+}
+
+
+message VersionInfo {
+    string Version = 1;
+    string GitCommit = 2;
+}
+
+
+message NodeName {
+  string NodeName = 1; 
+}
+
+message Null{
+  
+}
