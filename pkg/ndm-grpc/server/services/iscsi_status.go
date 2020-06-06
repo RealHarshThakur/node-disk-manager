@@ -11,47 +11,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server
+package services
 
 import (
+	ps "github.com/mitchellh/go-ps"
+	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+
 	"context"
 	"strings"
 
-	ps "github.com/mitchellh/go-ps"
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
 	"github.com/sirupsen/logrus"
 )
 
-// Service helps in creation of constructor
-type Service struct {
-	log *logrus.Logger
-}
+// Service helps in using types defined in Server
+type Service server.Service
 
 // NewService is a constructor
 func NewService(l *logrus.Logger) *Service {
-	return &Service{l}
+	return &Service{Log: l}
 }
 
-// Status returns the status of the service
+// Status gives the status of iSCSI service
 func (s *Service) Status(ctx context.Context, null *protos.Null) (*protos.ISCSIStatus, error) {
-	s.log.Info("Handling ISCSI status")
 
+	s.Log.Info("Finding ISCSI status")
+
+	// This will fetch the processes regardless of which OS is being used
 	processList, err := ps.Processes()
 	if err != nil {
-		s.log.Error(err)
+		s.Log.Error(err)
 	}
 
 	var found bool
 
 	for _, p := range processList {
+
 		if strings.Contains(p.Executable(), "iscsid") {
-			s.log.Infof("%v is running with process id %v", p.Executable(), p.Pid())
+			s.Log.Infof("%v is running with process id %v", p.Executable(), p.Pid())
 			found = true
 		}
 	}
 	if !found {
-		// Note: When using clients like grpcurl, they might output empty response when converting to json
-		// Set the appropriate flags to avoid that.
+		// Note: When using clients like grpcurl, they might return empty output as response when converting to json
+		// Set the appropriate flags to avoid that. In case of grpcurl, it is -emit-defaults
 		return &protos.ISCSIStatus{Status: false}, nil
 	}
 

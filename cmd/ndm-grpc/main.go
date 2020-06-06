@@ -18,7 +18,7 @@ import (
 	"os"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
-	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
+	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server/services"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -33,16 +33,16 @@ func main() {
 	gs := grpc.NewServer()
 
 	// Creates an instance of Info
-	is := server.NewInfo(log)
+	is := services.NewInfo(log)
 
 	// Creates an instance of Node
-	ns := server.NewService(log)
+	ns := services.NewService(log)
 
 	// This helps clients determine which services are available to call
 	reflection.Register(gs)
 
 	// Similar to registring handlers for http
-	protos.RegisterInfoServer(gs, is)
+	protos.RegisterInfoServer(gs, &is)
 
 	protos.RegisterISCSIServer(gs, ns)
 

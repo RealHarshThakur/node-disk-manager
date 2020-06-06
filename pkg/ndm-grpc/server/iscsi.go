@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Info defines the type
-type Info struct {
+// Service helps in creation of constructor
+type Service struct {
 	Log *logrus.Logger
 }

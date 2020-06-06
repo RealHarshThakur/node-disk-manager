@@ -11,13 +11,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server
+package services
 
 import (
-	"github.com/sirupsen/logrus"
+	"context"
+	"os"
+
+	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 )
 
-// Info defines the type
-type Info struct {
-	Log *logrus.Logger
+// FindNodeName is used to find the name of the worker node NDM is deployed on
+func (i *InfoType) FindNodeName(ctx context.Context, null *protos.Null) (*protos.NodeName, error) {
+
+	// Fetch the environment variable
+	nodeName := os.Getenv("NODE_NAME")
+
+	i.info.Log.Infof("Node name is : %v", nodeName)
+
+	return &protos.NodeName{NodeName: nodeName}, nil
+
 }
