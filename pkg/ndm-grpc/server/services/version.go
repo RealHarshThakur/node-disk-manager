@@ -22,20 +22,20 @@ import (
 	"context"
 )
 
-// InfoType lets types defined in Server used
-type InfoType struct {
-	info server.Info
+// Info lets types defined in Server used
+type Info struct {
+	server.Info
 }
 
 // NewInfo is a constructor
-func NewInfo(l *logrus.Logger) InfoType {
-	return InfoType{info: server.Info{Log: l}}
+func NewInfo(l *logrus.Logger) Info {
+	return Info{server.Info{Log: l}}
 }
 
 // FindVersion detects the version and gitCommit of NDM
-func (i *InfoType) FindVersion(ctx context.Context, null *protos.Null) (*protos.VersionInfo, error) {
+func (i *Info) FindVersion(ctx context.Context, null *protos.Null) (*protos.VersionInfo, error) {
 
-	i.info.Log.Infof("Print Version : %v , commit hash : %v", version.GetVersion(), version.GetGitCommit())
+	i.Log.Infof("Print Version : %v , commit hash : %v", version.GetVersion(), version.GetGitCommit())
 
 	return &protos.VersionInfo{Version: version.GetVersion(), GitCommit: version.GetGitCommit()}, nil
 

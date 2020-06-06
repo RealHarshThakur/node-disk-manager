@@ -25,11 +25,13 @@ import (
 )
 
 // Service helps in using types defined in Server
-type Service server.Service
+type Service struct {
+	server.Service
+}
 
 // NewService is a constructor
 func NewService(l *logrus.Logger) *Service {
-	return &Service{Log: l}
+	return &Service{server.Service{Log: l}}
 }
 
 // Status gives the status of iSCSI service
