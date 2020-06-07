@@ -4,7 +4,6 @@ tags
 *.swp
 *.swo
 service.yaml
-dev.yaml
 docker.sh
 Dockerfile.grpc
 Dockerfile.ndm
