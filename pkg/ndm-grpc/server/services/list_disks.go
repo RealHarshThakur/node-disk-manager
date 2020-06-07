@@ -56,6 +56,10 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 		return nil, status.Errorf(codes.Internal, "Error fetching list of disks")
 	}
 
+	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: controller.DefaultConfigFilePath})
+	if err != nil {
+		n.Log.Error("Error setting config ", err)
+	}
 	n.Log.Info(diskList)
 	if len(diskList.Items) == 0 {
 		n.Log.Info("No items found")
