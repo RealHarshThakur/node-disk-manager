@@ -29,6 +29,100 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type Disk struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"` // Other fields about disk
+}
+
+func (x *Disk) Reset() {
+	*x = Disk{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ndm_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Disk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Disk) ProtoMessage() {}
+
+func (x *Disk) ProtoReflect() protoreflect.Message {
+	mi := &file_ndm_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Disk.ProtoReflect.Descriptor instead.
+func (*Disk) Descriptor() ([]byte, []int) {
+	return file_ndm_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Disk) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type Disks struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Disks []*Disk `protobuf:"bytes,1,rep,name=disks,proto3" json:"disks,omitempty"`
+}
+
+func (x *Disks) Reset() {
+	*x = Disks{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ndm_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Disks) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Disks) ProtoMessage() {}
+
+func (x *Disks) ProtoReflect() protoreflect.Message {
+	mi := &file_ndm_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Disks.ProtoReflect.Descriptor instead.
+func (*Disks) Descriptor() ([]byte, []int) {
+	return file_ndm_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Disks) GetDisks() []*Disk {
+	if x != nil {
+		return x.Disks
+	}
+	return nil
+}
+
 type ISCSIStatus struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -40,7 +134,7 @@ type ISCSIStatus struct {
 func (x *ISCSIStatus) Reset() {
 	*x = ISCSIStatus{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_ndm_proto_msgTypes[0]
+		mi := &file_ndm_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -53,7 +147,7 @@ func (x *ISCSIStatus) String() string {
 func (*ISCSIStatus) ProtoMessage() {}
 
 func (x *ISCSIStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_ndm_proto_msgTypes[0]
+	mi := &file_ndm_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66,7 +160,7 @@ func (x *ISCSIStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ISCSIStatus.ProtoReflect.Descriptor instead.
 func (*ISCSIStatus) Descriptor() ([]byte, []int) {
-	return file_ndm_proto_rawDescGZIP(), []int{0}
+	return file_ndm_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ISCSIStatus) GetStatus() bool {
@@ -88,7 +182,7 @@ type VersionInfo struct {
 func (x *VersionInfo) Reset() {
 	*x = VersionInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_ndm_proto_msgTypes[1]
+		mi := &file_ndm_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -101,7 +195,7 @@ func (x *VersionInfo) String() string {
 func (*VersionInfo) ProtoMessage() {}
 
 func (x *VersionInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_ndm_proto_msgTypes[1]
+	mi := &file_ndm_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -114,7 +208,7 @@ func (x *VersionInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VersionInfo.ProtoReflect.Descriptor instead.
 func (*VersionInfo) Descriptor() ([]byte, []int) {
-	return file_ndm_proto_rawDescGZIP(), []int{1}
+	return file_ndm_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *VersionInfo) GetVersion() string {
@@ -142,7 +236,7 @@ type NodeName struct {
 func (x *NodeName) Reset() {
 	*x = NodeName{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_ndm_proto_msgTypes[2]
+		mi := &file_ndm_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -155,7 +249,7 @@ func (x *NodeName) String() string {
 func (*NodeName) ProtoMessage() {}
 
 func (x *NodeName) ProtoReflect() protoreflect.Message {
-	mi := &file_ndm_proto_msgTypes[2]
+	mi := &file_ndm_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -168,7 +262,7 @@ func (x *NodeName) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeName.ProtoReflect.Descriptor instead.
 func (*NodeName) Descriptor() ([]byte, []int) {
-	return file_ndm_proto_rawDescGZIP(), []int{2}
+	return file_ndm_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *NodeName) GetNodeName() string {
@@ -187,7 +281,7 @@ type Null struct {
 func (x *Null) Reset() {
 	*x = Null{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_ndm_proto_msgTypes[3]
+		mi := &file_ndm_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -200,7 +294,7 @@ func (x *Null) String() string {
 func (*Null) ProtoMessage() {}
 
 func (x *Null) ProtoReflect() protoreflect.Message {
-	mi := &file_ndm_proto_msgTypes[3]
+	mi := &file_ndm_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -213,33 +307,40 @@ func (x *Null) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Null.ProtoReflect.Descriptor instead.
 func (*Null) Descriptor() ([]byte, []int) {
-	return file_ndm_proto_rawDescGZIP(), []int{3}
+	return file_ndm_proto_rawDescGZIP(), []int{5}
 }
 
 var File_ndm_proto protoreflect.FileDescriptor
 
 var file_ndm_proto_rawDesc = []byte{
 	0x0a, 0x09, 0x6e, 0x64, 0x6d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x03, 0x6e, 0x64, 0x6d,
-	0x22, 0x25, 0x0a, 0x0b, 0x49, 0x53, 0x43, 0x53, 0x49, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12,
-	0x16, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52,
-	0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x45, 0x0a, 0x0b, 0x56, 0x65, 0x72, 0x73, 0x69,
-	0x6f, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x18, 0x0a, 0x07, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f,
-	0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x12, 0x1c, 0x0a, 0x09, 0x47, 0x69, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x09, 0x47, 0x69, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x22, 0x26,
-	0x0a, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x4e, 0x6f,
-	0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x4e, 0x6f,
-	0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x22, 0x06, 0x0a, 0x04, 0x4e, 0x75, 0x6c, 0x6c, 0x32, 0x5c,
-	0x0a, 0x04, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x2a, 0x0a, 0x0b, 0x46, 0x69, 0x6e, 0x64, 0x56, 0x65,
-	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x09, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x4e, 0x75, 0x6c, 0x6c,
-	0x1a, 0x10, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x6e,
-	0x66, 0x6f, 0x12, 0x28, 0x0a, 0x0c, 0x46, 0x69, 0x6e, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61,
-	0x6d, 0x65, 0x12, 0x09, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x1a, 0x0d, 0x2e,
-	0x6e, 0x64, 0x6d, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x32, 0x2e, 0x0a, 0x05,
-	0x49, 0x53, 0x43, 0x53, 0x49, 0x12, 0x25, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12,
-	0x09, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x1a, 0x10, 0x2e, 0x6e, 0x64, 0x6d,
-	0x2e, 0x49, 0x53, 0x43, 0x53, 0x49, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x42, 0x05, 0x5a, 0x03,
-	0x6e, 0x64, 0x6d, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0x1a, 0x0a, 0x04, 0x44, 0x69, 0x73, 0x6b, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x28, 0x0a, 0x05,
+	0x44, 0x69, 0x73, 0x6b, 0x73, 0x12, 0x1f, 0x0a, 0x05, 0x64, 0x69, 0x73, 0x6b, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x44, 0x69, 0x73, 0x6b, 0x52,
+	0x05, 0x64, 0x69, 0x73, 0x6b, 0x73, 0x22, 0x25, 0x0a, 0x0b, 0x49, 0x53, 0x43, 0x53, 0x49, 0x53,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x45, 0x0a,
+	0x0b, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x18, 0x0a, 0x07,
+	0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x56,
+	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x1c, 0x0a, 0x09, 0x47, 0x69, 0x74, 0x43, 0x6f, 0x6d,
+	0x6d, 0x69, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x47, 0x69, 0x74, 0x43, 0x6f,
+	0x6d, 0x6d, 0x69, 0x74, 0x22, 0x26, 0x0a, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65,
+	0x12, 0x1a, 0x0a, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x22, 0x06, 0x0a, 0x04,
+	0x4e, 0x75, 0x6c, 0x6c, 0x32, 0x5c, 0x0a, 0x04, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x2a, 0x0a, 0x0b,
+	0x46, 0x69, 0x6e, 0x64, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x09, 0x2e, 0x6e, 0x64,
+	0x6d, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x1a, 0x10, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x56, 0x65, 0x72,
+	0x73, 0x69, 0x6f, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x28, 0x0a, 0x0c, 0x46, 0x69, 0x6e, 0x64,
+	0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x09, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x4e,
+	0x75, 0x6c, 0x6c, 0x1a, 0x0d, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61,
+	0x6d, 0x65, 0x32, 0x2e, 0x0a, 0x05, 0x49, 0x53, 0x43, 0x53, 0x49, 0x12, 0x25, 0x0a, 0x06, 0x53,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x09, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x4e, 0x75, 0x6c, 0x6c,
+	0x1a, 0x10, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x49, 0x53, 0x43, 0x53, 0x49, 0x53, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x32, 0x2a, 0x0a, 0x04, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x22, 0x0a, 0x09, 0x4c, 0x69,
+	0x73, 0x74, 0x44, 0x69, 0x73, 0x6b, 0x73, 0x12, 0x09, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x4e, 0x75,
+	0x6c, 0x6c, 0x1a, 0x0a, 0x2e, 0x6e, 0x64, 0x6d, 0x2e, 0x44, 0x69, 0x73, 0x6b, 0x73, 0x42, 0x05,
+	0x5a, 0x03, 0x6e, 0x64, 0x6d, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -254,25 +355,30 @@ func file_ndm_proto_rawDescGZIP() []byte {
 	return file_ndm_proto_rawDescData
 }
 
-var file_ndm_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_ndm_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_ndm_proto_goTypes = []interface{}{
-	(*ISCSIStatus)(nil), // 0: ndm.ISCSIStatus
-	(*VersionInfo)(nil), // 1: ndm.VersionInfo
-	(*NodeName)(nil),    // 2: ndm.NodeName
-	(*Null)(nil),        // 3: ndm.Null
+	(*Disk)(nil),        // 0: ndm.Disk
+	(*Disks)(nil),       // 1: ndm.Disks
+	(*ISCSIStatus)(nil), // 2: ndm.ISCSIStatus
+	(*VersionInfo)(nil), // 3: ndm.VersionInfo
+	(*NodeName)(nil),    // 4: ndm.NodeName
+	(*Null)(nil),        // 5: ndm.Null
 }
 var file_ndm_proto_depIdxs = []int32{
-	3, // 0: ndm.Info.FindVersion:input_type -> ndm.Null
-	3, // 1: ndm.Info.FindNodeName:input_type -> ndm.Null
-	3, // 2: ndm.ISCSI.Status:input_type -> ndm.Null
-	1, // 3: ndm.Info.FindVersion:output_type -> ndm.VersionInfo
-	2, // 4: ndm.Info.FindNodeName:output_type -> ndm.NodeName
-	0, // 5: ndm.ISCSI.Status:output_type -> ndm.ISCSIStatus
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: ndm.Disks.disks:type_name -> ndm.Disk
+	5, // 1: ndm.Info.FindVersion:input_type -> ndm.Null
+	5, // 2: ndm.Info.FindNodeName:input_type -> ndm.Null
+	5, // 3: ndm.ISCSI.Status:input_type -> ndm.Null
+	5, // 4: ndm.Node.ListDisks:input_type -> ndm.Null
+	3, // 5: ndm.Info.FindVersion:output_type -> ndm.VersionInfo
+	4, // 6: ndm.Info.FindNodeName:output_type -> ndm.NodeName
+	2, // 7: ndm.ISCSI.Status:output_type -> ndm.ISCSIStatus
+	1, // 8: ndm.Node.ListDisks:output_type -> ndm.Disks
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_ndm_proto_init() }
@@ -282,7 +388,7 @@ func file_ndm_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_ndm_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ISCSIStatus); i {
+			switch v := v.(*Disk); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -294,7 +400,7 @@ func file_ndm_proto_init() {
 			}
 		}
 		file_ndm_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VersionInfo); i {
+			switch v := v.(*Disks); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -306,7 +412,7 @@ func file_ndm_proto_init() {
 			}
 		}
 		file_ndm_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NodeName); i {
+			switch v := v.(*ISCSIStatus); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -318,6 +424,30 @@ func file_ndm_proto_init() {
 			}
 		}
 		file_ndm_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*VersionInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ndm_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NodeName); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ndm_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Null); i {
 			case 0:
 				return &v.state
@@ -336,9 +466,9 @@ func file_ndm_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_ndm_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_ndm_proto_goTypes,
 		DependencyIndexes: file_ndm_proto_depIdxs,
@@ -532,6 +662,78 @@ var _ISCSI_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Status",
 			Handler:    _ISCSI_Status_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "ndm.proto",
+}
+
+// NodeClient is the client API for Node service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type NodeClient interface {
+	ListDisks(ctx context.Context, in *Null, opts ...grpc.CallOption) (*Disks, error)
+}
+
+type nodeClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewNodeClient(cc grpc.ClientConnInterface) NodeClient {
+	return &nodeClient{cc}
+}
+
+func (c *nodeClient) ListDisks(ctx context.Context, in *Null, opts ...grpc.CallOption) (*Disks, error) {
+	out := new(Disks)
+	err := c.cc.Invoke(ctx, "/ndm.Node/ListDisks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// NodeServer is the server API for Node service.
+type NodeServer interface {
+	ListDisks(context.Context, *Null) (*Disks, error)
+}
+
+// UnimplementedNodeServer can be embedded to have forward compatible implementations.
+type UnimplementedNodeServer struct {
+}
+
+func (*UnimplementedNodeServer) ListDisks(context.Context, *Null) (*Disks, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDisks not implemented")
+}
+
+func RegisterNodeServer(s *grpc.Server, srv NodeServer) {
+	s.RegisterService(&_Node_serviceDesc, srv)
+}
+
+func _Node_ListDisks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Null)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).ListDisks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ndm.Node/ListDisks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).ListDisks(ctx, req.(*Null))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Node_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "ndm.Node",
+	HandlerType: (*NodeServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListDisks",
+			Handler:    _Node_ListDisks_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

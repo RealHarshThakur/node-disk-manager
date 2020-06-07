@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Service defines the type
-type Service struct {
+// Node defines the type
+type Node struct {
 	Log *logrus.Logger
 }

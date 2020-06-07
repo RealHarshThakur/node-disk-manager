@@ -17,6 +17,19 @@ service ISCSI{
     rpc Status(Null) returns (ISCSIStatus);
   }
 
+service Node{
+  rpc ListDisks(Null) returns (Disks);
+  // rpc ListDiskDetails(Disk.name) returns (Disk.details);
+}
+
+message Disk{
+  string name = 1;
+  // Other fields about disk
+}
+
+message Disks{
+  repeated Disk disks = 1;
+}
 
 message ISCSIStatus{
   bool Status = 1 ;
@@ -34,5 +47,5 @@ message NodeName {
 }
 
 message Null{
-  
+ // Intentionally empty 
 }

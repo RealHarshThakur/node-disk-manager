@@ -16,6 +16,8 @@ package services
 import (
 	ps "github.com/mitchellh/go-ps"
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"context"
 	"strings"
@@ -43,6 +45,7 @@ func (s *Service) Status(ctx context.Context, null *protos.Null) (*protos.ISCSIS
 	processList, err := ps.Processes()
 	if err != nil {
 		s.Log.Error(err)
+		return nil, status.Errorf(codes.Internal, "Error fetching the processes")
 	}
 
 	var found bool

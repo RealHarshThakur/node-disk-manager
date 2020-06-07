@@ -35,8 +35,11 @@ func main() {
 	// Creates an instance of Info
 	is := services.NewInfo(log)
 
+	// Creates an instance of Service
+	ss := services.NewService(log)
+
 	// Creates an instance of Node
-	ns := services.NewService(log)
+	ns := services.NewNode(log)
 
 	// This helps clients determine which services are available to call
 	reflection.Register(gs)
@@ -44,7 +47,9 @@ func main() {
 	// Similar to registring handlers for http
 	protos.RegisterInfoServer(gs, &is)
 
-	protos.RegisterISCSIServer(gs, ns)
+	protos.RegisterISCSIServer(gs, ss)
+
+	protos.RegisterNodeServer(gs, ns)
 
 	l, err := net.Listen("tcp", "0.0.0.0:9090")
 	if err != nil {
