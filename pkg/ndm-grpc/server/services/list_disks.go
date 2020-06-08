@@ -58,36 +58,37 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 		return nil, status.Errorf(codes.Internal, "Error setting config to controller")
 	}
 
-	diskList, err := ctrl.ListBlockDeviceResource(false)
+	blockDeviceList, err := ctrl.ListBlockDeviceResource(false)
 	if err != nil {
 		n.Log.Errorf("Error listing block devices", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching list of disks")
 	}
 
-	if len(diskList.Items) == 0 {
+	if len(blockDeviceList.Items) == 0 {
 		n.Log.Info("No items found")
 	}
 
-	disks := make([]*protos.Disk, 0)
+	blockDevices := make([]*protos.Disk, 0)
 
-	parentNames, err := GetParentDisks(n, diskList)
+	// Disks which have partitions are considered as Parent Disks
+	parentNames, err := GetParentDisks(n, blockDeviceList)
 	if err != nil {
 		n.Log.Errorf("Error fetching Parent disks %v", err)
 	}
 
-	holderNames, err := GetHolders(n, diskList)
+	holderNames, err := GetHolders(n, blockDeviceList)
 	if err != nil {
 		n.Log.Errorf("Error fetching Holders %v", err)
 	}
 
-	slaveNames, err := GetSlaves(n, diskList)
+	slaveNames, err := GetSlaves(n, blockDeviceList)
 	if err != nil {
 		n.Log.Errorf("Error fetching slaves %v", err)
 	}
 
 	for _, name := range holderNames {
 
-		disks = append(disks, &protos.Disk{
+		blockDevices = append(blockDevices, &protos.Disk{
 			Name: name,
 			Type: "Holder",
 		})
@@ -95,7 +96,7 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 
 	for _, name := range slaveNames {
 
-		disks = append(disks, &protos.Disk{
+		blockDevices = append(blockDevices, &protos.Disk{
 			Name: name,
 			Type: "Slaves",
 		})
@@ -103,22 +104,22 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 
 	for _, name := range parentNames {
 
-		disks = append(disks, &protos.Disk{
+		blockDevices = append(blockDevices, &protos.Disk{
 			Name:       name,
-			Type:       "Parent",
+			Type:       "Disk",
 			Partitions: GetPartitions(n, name),
 		})
 	}
 
 	return &protos.Disks{
-		Disks: disks,
+		Disks: blockDevices,
 	}, nil
 }
 
 // GetHolders gets the holders of a particular device
 func GetHolders(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 
-	diskNames := make([]string, 0)
+	blockDeviceNames := make([]string, 0)
 	for _, bd := range BL.Items {
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
@@ -126,16 +127,16 @@ func GetHolders(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 			n.Log.Errorf("Error fetching dependents of the disk", err)
 			return nil, err
 		}
-		diskNames = depDevices.Holders
+		blockDeviceNames = depDevices.Holders
 
 	}
-	return diskNames, nil
+	return blockDeviceNames, nil
 }
 
 // GetSlaves gets the holders of a particular device
 func GetSlaves(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 
-	diskNames := make([]string, 0)
+	blockDeviceNames := make([]string, 0)
 	for _, bd := range BL.Items {
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
@@ -143,10 +144,10 @@ func GetSlaves(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 			n.Log.Errorf("Error fetching dependents of the disk", err)
 			return nil, err
 		}
-		diskNames = depDevices.Slaves
+		blockDeviceNames = depDevices.Slaves
 
 	}
-	return diskNames, nil
+	return blockDeviceNames, nil
 }
 
 // GetPartitions gets the partitions given a parent disk name
@@ -173,7 +174,7 @@ func GetPartitions(n *Node, name string) []string {
 //GetParentDisks returns the names of disks which are parents(have partitions and aren't holders/slaves)
 func GetParentDisks(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 
-	diskNames := make([]string, 0)
+	blockDeviceNames := make([]string, 0)
 	for _, bd := range BL.Items {
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
@@ -185,7 +186,7 @@ func GetParentDisks(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 			n.Log.Infof("This could be a holder or slave")
 			return nil, err
 		}
-		diskNames = append(diskNames, depDevices.Parent)
+		blockDeviceNames = append(blockDeviceNames, depDevices.Parent)
 	}
-	return diskNames, nil
+	return blockDeviceNames, nil
 }
