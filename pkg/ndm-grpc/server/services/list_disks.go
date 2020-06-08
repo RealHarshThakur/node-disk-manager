@@ -14,6 +14,7 @@ limitations under the License.
 package services
 
 import (
+	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 
 	"context"
@@ -23,6 +24,7 @@ import (
 
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 
+	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
 	"github.com/sirupsen/logrus"
 )
@@ -50,47 +52,140 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 		return nil, status.Errorf(codes.NotFound, "Namespace not found")
 	}
 
+	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: "/host/node-disk-manager.config"})
+	if err != nil {
+		n.Log.Error("Error setting config to controller ", err)
+		return nil, status.Errorf(codes.Internal, "Error setting config to controller")
+	}
+
 	diskList, err := ctrl.ListBlockDeviceResource(false)
 	if err != nil {
 		n.Log.Errorf("Error listing block devices", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching list of disks")
 	}
 
-	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: controller.DefaultConfigFilePath})
-	if err != nil {
-		n.Log.Error("Error setting config ", err)
-	}
-	n.Log.Info(diskList)
 	if len(diskList.Items) == 0 {
 		n.Log.Info("No items found")
 	}
 
-	for _, item := range diskList.Items {
-		n.Log.Info("Printing item")
-		n.Log.Info(item.Spec.Path)
+	disks := make([]*protos.Disk, 0)
+
+	parentNames, err := GetParentDisks(n, diskList)
+	if err != nil {
+		n.Log.Errorf("Error fetching Parent disks %v", err)
 	}
 
-	// disks := make([]*protos.Disk, 0, len(names))
+	holderNames, err := GetHolders(n, diskList)
+	if err != nil {
+		n.Log.Errorf("Error fetching Holders %v", err)
+	}
 
-	// for _, name := range names {
-	//   disks = append(disks, &protos.Disk{
-	// 	Name: name,
-	//   })
-	// }
+	slaveNames, err := GetSlaves(n, diskList)
+	if err != nil {
+		n.Log.Errorf("Error fetching slaves %v", err)
+	}
 
-	// return &protos.Disks{
-	// 	Disks: disks,
-	//  }, nil
-	return &protos.Disks{}, nil
+	for _, name := range holderNames {
+
+		disks = append(disks, &protos.Disk{
+			Name: name,
+			Type: "Holder",
+		})
+	}
+
+	for _, name := range slaveNames {
+
+		disks = append(disks, &protos.Disk{
+			Name: name,
+			Type: "Slaves",
+		})
+	}
+
+	for _, name := range parentNames {
+
+		disks = append(disks, &protos.Disk{
+			Name:       name,
+			Type:       "Parent",
+			Partitions: GetPartitions(n, name),
+		})
+	}
+
+	return &protos.Disks{
+		Disks: disks,
+	}, nil
 }
 
-// func mapNamesToDisks(names string) []protos.Disk {
-// 	mapped := make([]protos.Disk, 0, len(names))
+// GetHolders gets the holders of a particular device
+func GetHolders(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 
-// 	for _, name := range names {
-// 		mapped = append(mapped, protos.Disk{
-// 			Name: name,
-// 		})
-// 	}
-// 	return mapped
-// }
+	diskNames := make([]string, 0)
+	for _, bd := range BL.Items {
+		device := hierarchy.Device{Path: bd.Spec.Path}
+		depDevices, err := device.GetDependents()
+		if err != nil {
+			n.Log.Errorf("Error fetching dependents of the disk", err)
+			return nil, err
+		}
+		diskNames = depDevices.Holders
+
+	}
+	return diskNames, nil
+}
+
+// GetSlaves gets the holders of a particular device
+func GetSlaves(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
+
+	diskNames := make([]string, 0)
+	for _, bd := range BL.Items {
+		device := hierarchy.Device{Path: bd.Spec.Path}
+		depDevices, err := device.GetDependents()
+		if err != nil {
+			n.Log.Errorf("Error fetching dependents of the disk", err)
+			return nil, err
+		}
+		diskNames = depDevices.Slaves
+
+	}
+	return diskNames, nil
+}
+
+// GetPartitions gets the partitions given a parent disk name
+func GetPartitions(n *Node, name string) []string {
+
+	device := hierarchy.Device{Path: name}
+
+	depDevices, err := device.GetDependents()
+	if err != nil {
+		n.Log.Errorf("Error fetching dependents of the disk", err)
+		return nil
+	}
+
+	if len(depDevices.Partitions) == 0 {
+		n.Log.Infof("This device has no partitions")
+		return nil
+	}
+	partitonNames := depDevices.Partitions
+
+	return partitonNames
+
+}
+
+//GetParentDisks returns the names of disks which are parents(have partitions and aren't holders/slaves)
+func GetParentDisks(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
+
+	diskNames := make([]string, 0)
+	for _, bd := range BL.Items {
+		device := hierarchy.Device{Path: bd.Spec.Path}
+		depDevices, err := device.GetDependents()
+		if err != nil {
+			n.Log.Errorf("Error fetching dependents of the disk", err)
+			return nil, err
+		}
+		if len(depDevices.Parent) == 0 {
+			n.Log.Infof("This could be a holder or slave")
+			return nil, err
+		}
+		diskNames = append(diskNames, depDevices.Parent)
+	}
+	return diskNames, nil
+}

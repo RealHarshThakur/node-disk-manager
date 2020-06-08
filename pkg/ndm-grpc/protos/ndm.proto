@@ -24,6 +24,9 @@ service Node{
 
 message Disk{
   string name = 1;
+  string size = 2;
+  string type = 3; 
+  repeated string partitions = 4;
   // Other fields about disk
 }
 
