@@ -75,31 +75,32 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 		n.Log.Errorf("Error fetching Parent disks %v", err)
 	}
 
-	holderNames, err := GetHolders(n, blockDeviceList)
-	if err != nil {
-		n.Log.Errorf("Error fetching Holders %v", err)
-	}
+	// Commenting this section for now as Holders and Slaves do not yet support lsblk types
+	// holderNames, err := GetHolders(n, blockDeviceList)
+	// if err != nil {
+	// 	n.Log.Errorf("Error fetching Holders %v", err)
+	// }
 
-	slaveNames, err := GetSlaves(n, blockDeviceList)
-	if err != nil {
-		n.Log.Errorf("Error fetching slaves %v", err)
-	}
+	// slaveNames, err := GetSlaves(n, blockDeviceList)
+	// if err != nil {
+	// 	n.Log.Errorf("Error fetching slaves %v", err)
+	// }
 
-	for _, name := range holderNames {
+	// for _, name := range holderNames {
 
-		blockDevices = append(blockDevices, &protos.BlockDevice{
-			Name: name,
-			Type: "Holder",
-		})
-	}
+	// 	blockDevices = append(blockDevices, &protos.BlockDevice{
+	// 		Name: name,
+	// 		Type: "Holder",
+	// 	})
+	// }
 
-	for _, name := range slaveNames {
+	// for _, name := range slaveNames {
 
-		blockDevices = append(blockDevices, &protos.BlockDevice{
-			Name: name,
-			Type: "Slaves",
-		})
-	}
+	// 	blockDevices = append(blockDevices, &protos.BlockDevice{
+	// 		Name: name,
+	// 		Type: "Slaves",
+	// 	})
+	// }
 
 	for _, name := range parentNames {
 
