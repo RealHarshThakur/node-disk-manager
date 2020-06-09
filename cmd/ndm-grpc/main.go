@@ -27,8 +27,8 @@ import (
 func main() {
 
 	log := logrus.New()
+	log.SetReportCaller(true)
 	log.Out = os.Stdout
-
 	// Creating a grpc server, use WithInsecure to allow http connections
 	gs := grpc.NewServer()
 
