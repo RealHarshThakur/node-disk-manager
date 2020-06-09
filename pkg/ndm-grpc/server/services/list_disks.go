@@ -31,20 +31,20 @@ import (
 
 // Node helps in using types defined in Server
 type Node struct {
-	server.Node
+	*server.Node
 }
 
 // NewNode is a constructor
 func NewNode(l *logrus.Logger) *Node {
-	return &Node{server.Node{Log: l}}
+	return &Node{&server.Node{Log: l}}
 }
 
-type disks []protos.Disk
+type disks []protos.BlockDevice
 
 // ListDisks gives the status of iSCSI service
-func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks, error) {
+func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.BlockDevices, error) {
 
-	n.Log.Info("Listing devices")
+	n.Log.Info("Listing block devices")
 
 	ctrl, err := controller.NewController()
 	if err != nil {
@@ -68,7 +68,7 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 		n.Log.Info("No items found")
 	}
 
-	blockDevices := make([]*protos.Disk, 0)
+	blockDevices := make([]*protos.BlockDevice, 0)
 
 	// Disks which have partitions are considered as Parent Disks
 	parentNames, err := GetParentDisks(n, blockDeviceList)
@@ -88,7 +88,7 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 
 	for _, name := range holderNames {
 
-		blockDevices = append(blockDevices, &protos.Disk{
+		blockDevices = append(blockDevices, &protos.BlockDevice{
 			Name: name,
 			Type: "Holder",
 		})
@@ -96,7 +96,7 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 
 	for _, name := range slaveNames {
 
-		blockDevices = append(blockDevices, &protos.Disk{
+		blockDevices = append(blockDevices, &protos.BlockDevice{
 			Name: name,
 			Type: "Slaves",
 		})
@@ -104,15 +104,15 @@ func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.Disks,
 
 	for _, name := range parentNames {
 
-		blockDevices = append(blockDevices, &protos.Disk{
+		blockDevices = append(blockDevices, &protos.BlockDevice{
 			Name:       name,
 			Type:       "Disk",
 			Partitions: GetPartitions(n, name),
 		})
 	}
 
-	return &protos.Disks{
-		Disks: blockDevices,
+	return &protos.BlockDevices{
+		Blockdevices: blockDevices,
 	}, nil
 }
 

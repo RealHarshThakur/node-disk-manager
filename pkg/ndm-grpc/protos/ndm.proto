@@ -18,21 +18,20 @@ service ISCSI{
   }
 
 service Node{
-  rpc ListDisks(Null) returns (Disks);
-  rpc ListDiskDetails(Disk) returns (Disk); 
+  rpc ListBlockDevices(Null) returns (BlockDevices);
+  rpc ListBlockDeviceDetails(BlockDevice) returns (BlockDevice); // Input is disk name and response can be details about disk
 }
 
-
-
-message Disk{
+message BlockDevice{
   string name = 1;
-  string type = 3; 
-  repeated string partitions = 4;
+  string type = 2; // Type can be 
+  repeated string partitions = 3;
+
   // Other fields about disk
 }
 
-message Disks{
-  repeated Disk disks = 1;
+message  BlockDevices{
+  repeated BlockDevice blockdevices = 1;
 }
 
 message ISCSIStatus{
