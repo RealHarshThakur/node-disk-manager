@@ -23,7 +23,7 @@ import (
 )
 
 // ListBlockDeviceDetails gives the details about the disk from SMART
-func (n *Node) ListBlockDeviceDetails(ctx context.Context, bd *protos.BlockDevice) (*protos.BlockDevice, error) {
+func (n *Node) ListBlockDeviceDetails(ctx context.Context, bd *protos.BlockDevice) (*protos.BlockDeviceDetails, error) {
 
 	n.Log.Info("Listing Device Details")
 
@@ -31,13 +31,27 @@ func (n *Node) ListBlockDeviceDetails(ctx context.Context, bd *protos.BlockDevic
 		DevPath: bd.Name,
 	}
 	info, err := device.SCSIBasicDiskInfo()
-	if err != nil {
+	if len(err) != 0 {
 		n.Log.Errorf("Error fetching block device details %v", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching disk details")
 	}
 	n.Log.Info(info.BasicDiskAttr)
 	n.Log.Info(info.ATADiskAttr)
 
-	return &protos.BlockDevice{}, nil
+	return &protos.BlockDeviceDetails{
+		Compliance:       info.BasicDiskAttr.Compliance,
+		Vendor:           info.BasicDiskAttr.Vendor,
+		ModelNumber:      info.BasicDiskAttr.ModelNumber,
+		SerialNumber:     info.BasicDiskAttr.SerialNumber,
+		FirmwareRevision: info.BasicDiskAttr.FirmwareRevision,
+		WWN:              info.BasicDiskAttr.WWN,
+		Capacity:         info.BasicDiskAttr.Capacity,
+		LBSize:           info.BasicDiskAttr.LBSize,
+		PBSize:           info.BasicDiskAttr.PBSize,
+		RotationRate:     uint32(info.BasicDiskAttr.RotationRate),
+		ATAMajorVersion:  info.ATADiskAttr.ATAMajorVersion,
+		ATAMinorVersion:  info.ATADiskAttr.ATAMinorVersion,
+		AtaTransport:     info.ATADiskAttr.AtaTransport,
+	}, nil
 
 }

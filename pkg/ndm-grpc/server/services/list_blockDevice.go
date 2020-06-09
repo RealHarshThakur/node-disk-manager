@@ -70,7 +70,6 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 
 	blockDevices := make([]*protos.BlockDevice, 0)
 
-	// Disks which have partitions are considered as Parent Disks
 	parentNames, err := GetParentDisks(n, blockDeviceList)
 	if err != nil {
 		n.Log.Errorf("Error fetching Parent disks %v", err)

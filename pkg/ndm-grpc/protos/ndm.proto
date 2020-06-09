@@ -19,7 +19,24 @@ service ISCSI{
 
 service Node{
   rpc ListBlockDevices(Null) returns (BlockDevices);
-  rpc ListBlockDeviceDetails(BlockDevice) returns (BlockDevice); // Input is disk name and response can be details about disk
+  rpc ListBlockDeviceDetails(BlockDevice) returns (BlockDeviceDetails); 
+}
+
+
+message BlockDeviceDetails{
+    string Compliance = 1;
+    string Vendor = 2;           
+    string ModelNumber = 3;      
+    string SerialNumber = 4;     
+    string FirmwareRevision =  5; 
+    string WWN = 6;              
+    uint64 Capacity = 7;         
+    uint32 LBSize = 8 ;           
+    uint32 PBSize = 9 ;           
+    uint32 RotationRate = 10;    
+    string ATAMajorVersion = 11; 
+    string ATAMinorVersion = 12; 
+    string AtaTransport = 13;     
 }
 
 message BlockDevice{
