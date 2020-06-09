@@ -31,18 +31,18 @@ import (
 
 // Node helps in using types defined in Server
 type Node struct {
-	*server.Node
+	server.Node
 }
 
 // NewNode is a constructor
 func NewNode(l *logrus.Logger) *Node {
-	return &Node{&server.Node{Log: l}}
+	return &Node{server.Node{Log: l}}
 }
 
 type disks []protos.BlockDevice
 
-// ListDisks gives the status of iSCSI service
-func (n *Node) ListDisks(ctx context.Context, null *protos.Null) (*protos.BlockDevices, error) {
+// ListBlockDevices gives the status of iSCSI service
+func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos.BlockDevices, error) {
 
 	n.Log.Info("Listing block devices")
 

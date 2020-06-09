@@ -15,14 +15,28 @@ package services
 
 import (
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	"github.com/openebs/node-disk-manager/pkg/smart"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"context"
 )
 
 // ListBlockDeviceDetails gives the details about the disk from SMART
-func (n *Node) ListBlockDeviceDetails(ctx context.Context, null *protos.BlockDevice) (*protos.BlockDevice, error) {
+func (n *Node) ListBlockDeviceDetails(ctx context.Context, bd *protos.BlockDevice) (*protos.BlockDevice, error) {
 
 	n.Log.Info("Listing Device Details")
+
+	device := smart.Identifier{
+		DevPath: bd.Name,
+	}
+	info, err := device.SCSIBasicDiskInfo()
+	if err != nil {
+		n.Log.Errorf("Error fetching block device details %v", err)
+		return nil, status.Errorf(codes.Internal, "Error fetching disk details")
+	}
+	n.Log.Info(info.BasicDiskAttr)
+	n.Log.Info(info.ATADiskAttr)
 
 	return &protos.BlockDevice{}, nil
 

@@ -49,7 +49,7 @@ func main() {
 
 	protos.RegisterISCSIServer(gs, ss)
 
-	protos.RegisterNodeServer(gs, &ns)
+	protos.RegisterNodeServer(gs, ns)
 
 	l, err := net.Listen("tcp", "0.0.0.0:9090")
 	if err != nil {
