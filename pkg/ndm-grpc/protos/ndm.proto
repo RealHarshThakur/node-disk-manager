@@ -6,9 +6,12 @@ package ndm;
 option go_package="ndm";
 
 
-// This service can return generic information about nodes
+// This service can return generic information 
 service Info {
+    // FindVersion Method gets the version information of the NDM components installed
     rpc FindVersion (Null) returns (VersionInfo);
+    // @akhilerm @kmova Should this be in the service Node?
+    //  FindNodeName method is used find the name of the node on which NDM is running on 
     rpc FindNodeName(Null) returns (NodeName) ;
   }
 
@@ -18,8 +21,23 @@ service ISCSI{
   }
 
 service Node{
+  // ListBlockDevices method is used to return all the block devices found in hierarchy by NDM
   rpc ListBlockDevices(Null) returns (BlockDevices);
+  // ListBlockDeviceDetails method is used to find SMART info about a block device.
+  // Only the name field is required for input 
   rpc ListBlockDeviceDetails(BlockDevice) returns (BlockDeviceDetails); 
+
+  // Set hugePages on this node
+  rpc SetHugepages(HugepagesRequest) returns (HugepagesResult);
+
+}
+
+message HugepagesRequest{
+  int32 pages = 1;
+}
+
+message HugepagesResult{
+  bool result = 1; 
 }
 
 
