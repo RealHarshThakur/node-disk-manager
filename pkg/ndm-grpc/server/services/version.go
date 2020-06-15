@@ -28,8 +28,8 @@ type Info struct {
 }
 
 // NewInfo is a constructor
-func NewInfo(l *logrus.Logger) Info {
-	return Info{server.Info{Log: l}}
+func NewInfo(l *logrus.Logger) *Info {
+	return &Info{server.Info{Log: l}}
 }
 
 // FindVersion detects the version and gitCommit of NDM

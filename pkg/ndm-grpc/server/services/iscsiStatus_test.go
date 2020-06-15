@@ -14,29 +14,41 @@ limitations under the License.
 package services
 
 import (
-	"context"
-	"os"
 	"testing"
 
-	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"github.com/sirupsen/logrus"
 )
 
-// TestFindNodeName tests FindNodeName service
-func TestFindNodeName(t *testing.T) {
-	os.Setenv("NODE_NAME", "TEST_NODE")
+type Processes interface {
+	Pid() int
+	Ppid() int
+	Executable() string
+}
 
-	var ctx context.Context
-	var null *protos.Null
+type Process struct {
+}
+
+func (*Process) Pid() int {
+
+	return 100
+}
+
+func (*Process) PPid() int {
+
+	return 40
+}
+
+func (*Process) Executable() string {
+
+	return "iscsi"
+}
+
+func TestcheckISCSI(t *testing.T) {
+
 	l := logrus.New()
+	s := NewService(l)
 
-	i := NewInfo(l)
-	res, err := i.FindNodeName(ctx, null)
-	if err != nil {
-		t.Error("Error in finding node name")
-	}
-	if res.NodeName != "TEST_NODE" {
-		t.Errorf("Expected node name was %v and got %v", "TEST_NODE", res.NodeName)
-	}
+	processList := &Process{Pid()}
+	checkISCSI(s, processList, found)
 
 }

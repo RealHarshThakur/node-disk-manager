@@ -45,7 +45,7 @@ func main() {
 	reflection.Register(gs)
 
 	// Similar to registring handlers for http
-	protos.RegisterInfoServer(gs, &is)
+	protos.RegisterInfoServer(gs, is)
 
 	protos.RegisterISCSIServer(gs, ss)
 
