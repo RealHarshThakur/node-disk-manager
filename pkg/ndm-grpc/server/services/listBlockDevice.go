@@ -48,19 +48,19 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 
 	ctrl, err := controller.NewController()
 	if err != nil {
-		n.Log.Errorf("Error creating a controller", err)
+		n.Log.Errorf("Error creating a controller %v", err)
 		return nil, status.Errorf(codes.NotFound, "Namespace not found")
 	}
 
 	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: "/host/node-disk-manager.config"})
 	if err != nil {
-		n.Log.Error("Error setting config to controller ", err)
+		n.Log.Errorf("Error setting config to controller %v", err)
 		return nil, status.Errorf(codes.Internal, "Error setting config to controller")
 	}
 
 	blockDeviceList, err := ctrl.ListBlockDeviceResource(false)
 	if err != nil {
-		n.Log.Errorf("Error listing block devices", err)
+		n.Log.Errorf("Error listing block devices %v", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching list of disks")
 	}
 
@@ -124,7 +124,7 @@ func GetHolders(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
 		if err != nil {
-			n.Log.Errorf("Error fetching dependents of the disk", err)
+			n.Log.Errorf("Error fetching dependents of the disk %v", err)
 			return nil, err
 		}
 		blockDeviceNames = depDevices.Holders
@@ -141,7 +141,7 @@ func GetSlaves(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
 		if err != nil {
-			n.Log.Errorf("Error fetching dependents of the disk", err)
+			n.Log.Errorf("Error fetching dependents of the disk %v", err)
 			return nil, err
 		}
 		blockDeviceNames = depDevices.Slaves
@@ -157,7 +157,7 @@ func GetPartitions(n *Node, name string) []string {
 
 	depDevices, err := device.GetDependents()
 	if err != nil {
-		n.Log.Errorf("Error fetching dependents of the disk", err)
+		n.Log.Errorf("Error fetching dependents of the disk %v", err)
 		return nil
 	}
 
@@ -179,7 +179,7 @@ func GetParentDisks(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
 		if err != nil {
-			n.Log.Errorf("Error fetching dependents of the disk", err)
+			n.Log.Errorf("Error fetching dependents of the disk %v", err)
 			return nil, err
 		}
 		if len(depDevices.Parent) == 0 {
