@@ -16,39 +16,48 @@ package services
 import (
 	"testing"
 
+	ps "github.com/mitchellh/go-ps"
+
 	"github.com/sirupsen/logrus"
 )
 
-type Processes interface {
-	Pid() int
-	Ppid() int
-	Executable() string
-}
-
 type Process struct {
+	PidMock        int
+	PPidMock       int
+	ExecutableMock string
 }
 
-func (*Process) Pid() int {
+func (p Process) Pid() int {
 
-	return 100
+	return p.PidMock
 }
 
-func (*Process) PPid() int {
+func (p Process) PPid() int {
 
-	return 40
+	return p.PPidMock
 }
 
-func (*Process) Executable() string {
+func (p Process) Executable() string {
 
-	return "iscsi"
+	return p.ExecutableMock
 }
 
+//TestcheckISCSI checks the ISCSI service
 func TestcheckISCSI(t *testing.T) {
 
 	l := logrus.New()
 	s := NewService(l)
 
-	processList := &Process{Pid()}
+	mockProcess := Process{
+		PidMock:  100,
+		PPidMock: 200,
+
+		ExecutableMock: "iscsid",
+	}
+	processList := make([]ps.Process, 0)
+	_ = append(processList, mockProcess)
+
+	var found *bool
 	checkISCSI(s, processList, found)
 
 }
