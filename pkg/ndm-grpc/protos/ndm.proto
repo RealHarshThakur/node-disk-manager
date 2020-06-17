@@ -10,9 +10,7 @@ option go_package="ndm";
 service Info {
     // FindVersion Method gets the version information of the NDM components installed
     rpc FindVersion (Null) returns (VersionInfo);
-    // @akhilerm @kmova Should this be in the service Node?
-    //  FindNodeName method is used find the name of the node on which NDM is running on 
-    rpc FindNodeName(Null) returns (NodeName) ;
+
   }
 
 // This service returns status of ISCSI
@@ -21,18 +19,26 @@ service ISCSI{
   }
 
 service Node{
+      
+  //  FindNodeName method is used find the name of the node on which NDM is running on 
+    rpc Name(Null) returns (NodeName) ;
+  
   // ListBlockDevices method is used to return all the block devices found in hierarchy by NDM
   rpc ListBlockDevices(Null) returns (BlockDevices);
+  
   // ListBlockDeviceDetails method is used to find SMART info about a block device.
   // Only the name field is required for input 
   rpc ListBlockDeviceDetails(BlockDevice) returns (BlockDeviceDetails); 
 
   // Set hugePages on this node
-  rpc SetHugepages(HugepagesRequest) returns (HugepagesResult);
+  rpc SetHugepages(Hugepages) returns (HugepagesResult);
+
+  // Gets the number of huge pages set on the node
+  rpc GetHugepages(Null) returns (Hugepages);
 
 }
 
-message HugepagesRequest{
+message Hugepages{
   int32 pages = 1;
 }
 

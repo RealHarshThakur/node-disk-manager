@@ -17,6 +17,7 @@ import (
 	"context"
 	"io/ioutil"
 	"strconv"
+	"strings"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc/codes"
@@ -24,11 +25,11 @@ import (
 )
 
 // SetHugepages service can set 2MB hugepages on a node
-func (n *Node) SetHugepages(ctx context.Context, h *protos.HugepagesRequest) (*protos.HugepagesResult, error) {
+func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.HugepagesResult, error) {
 
 	n.Log.Info("Setting Hugepages")
 
-	hugepages := protos.HugepagesRequest{
+	hugepages := protos.Hugepages{
 		Pages: h.Pages,
 	}
 
@@ -40,4 +41,26 @@ func (n *Node) SetHugepages(ctx context.Context, h *protos.HugepagesRequest) (*p
 	}
 
 	return &protos.HugepagesResult{Result: true}, nil
+}
+
+// GetHugepages services gets the number of hugepages on a node
+func (n *Node) GetHugepages(ctx context.Context, null *protos.Null) (*protos.Hugepages, error) {
+
+	n.Log.Info("Getting the number of hugepages")
+
+	hugepages, err := ioutil.ReadFile("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages")
+	if err != nil {
+		n.Log.Errorf("Error fetching number of hugepages %v", err)
+		return nil, status.Errorf(codes.Internal, "Error fetching the number of hugepages set on the node")
+	}
+
+	pages, err := strconv.Atoi(strings.TrimRight(string(hugepages), "\n"))
+	if err != nil {
+		n.Log.Errorf("Error converting number of hugepages %v", err)
+		return nil, status.Errorf(codes.Internal, "Error converting the number of hugepages set on the node")
+	}
+
+	return &protos.Hugepages{
+		Pages: int32(pages),
+	}, nil
 }

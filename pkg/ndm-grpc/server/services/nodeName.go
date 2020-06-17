@@ -20,13 +20,13 @@ import (
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 )
 
-// FindNodeName is used to find the name of the worker node NDM is deployed on
-func (i *Info) FindNodeName(ctx context.Context, null *protos.Null) (*protos.NodeName, error) {
+// Name is used to find the name of the worker node NDM is deployed on
+func (n *Node) Name(ctx context.Context, null *protos.Null) (*protos.NodeName, error) {
 
 	// Fetch the environment variable
 	nodeName := os.Getenv("NODE_NAME")
 
-	i.Log.Infof("Node name is : %v", nodeName)
+	n.Log.Infof("Node name is : %v", nodeName)
 
 	return &protos.NodeName{NodeName: nodeName}, nil
 

@@ -30,8 +30,8 @@ func TestFindNodeName(t *testing.T) {
 	var null *protos.Null
 	l := logrus.New()
 
-	i := NewInfo(l)
-	res, err := i.FindNodeName(ctx, null)
+	n := NewNode(l)
+	res, err := n.Name(ctx, null)
 	if err != nil {
 		t.Error("Error in finding node name")
 	}
