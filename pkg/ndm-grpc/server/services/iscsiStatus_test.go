@@ -43,7 +43,7 @@ func (p Process) Executable() string {
 }
 
 //TestcheckISCSI checks the ISCSI service
-func TestcheckISCSI(t *testing.T) {
+func TestCheckISCSI(t *testing.T) {
 
 	l := logrus.New()
 	s := NewService(l)

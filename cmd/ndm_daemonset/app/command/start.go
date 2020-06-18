@@ -20,6 +20,16 @@ import (
 	"fmt"
 	"os"
 
+	"net"
+
+	"sync"
+
+	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server/services"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/filter"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/probe"
@@ -28,6 +38,49 @@ import (
 
 //NewCmdStart starts the ndm controller
 func NewCmdStart() *cobra.Command {
+	var wg sync.WaitGroup
+
+	go func() {
+		{
+			wg.Add(1)
+			log := logrus.New()
+			log.SetReportCaller(true)
+			log.Out = os.Stdout
+			// Creating a grpc server, use WithInsecure to allow http connections
+			gs := grpc.NewServer()
+
+			// Creates an instance of Info
+			is := services.NewInfo(log)
+
+			// Creates an instance of Service
+			ss := services.NewService(log)
+
+			// Creates an instance of Node
+			ns := services.NewNode(log)
+
+			// This helps clients determine which services are available to call
+			reflection.Register(gs)
+
+			// Similar to registring handlers for http
+			protos.RegisterInfoServer(gs, is)
+
+			protos.RegisterISCSIServer(gs, ss)
+
+			protos.RegisterNodeServer(gs, ns)
+
+			l, err := net.Listen("tcp", "0.0.0.0:9090")
+			if err != nil {
+				log.Error("Unable to listen", err)
+				os.Exit(1)
+			}
+
+			// Listen for requests
+			log.Info("Starting server at 9090")
+			gs.Serve(l)
+
+		}
+
+	}()
 	//var target string
 	getCmd := &cobra.Command{
 		Use:   "start",
@@ -54,6 +107,7 @@ func NewCmdStart() *cobra.Command {
 			// Start starts registering of probes present in RegisteredProbes
 			probe.Start(probe.RegisteredProbes)
 			ctrl.Start()
+
 		},
 	}
 
