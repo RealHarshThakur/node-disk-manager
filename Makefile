@@ -126,7 +126,7 @@ build.common: license-check-go version
 
 # Tools required for different make targets or for development purposes
 EXTERNAL_TOOLS=\
-	github.com/mitchellh/gox \
+	github.com/mitchellh/gox 
 
 # Bootstrap the build by downloading additional tools
 .PHONY: bootstrap
@@ -162,8 +162,6 @@ vet:
 .PHONY: fmt
 fmt:
 	find . -type f -name "*.go" | grep -v "./vendor/*" | xargs gofmt -s -w -l
-
-
 
 # shellcheck target for checking shell scripts linting
 .PHONY: shellcheck
@@ -251,8 +249,8 @@ docker.exporter: build.exporter Dockerfile.exporter
 .PHONY: deps
 deps: header
 	@echo '--> Resolving dependencies...'
-	go mod tidy 
-	go mod verify 
+	go mod tidy
+	go mod verify
 	go mod vendor
 	@echo '--> Depedencies resolved.'
 	@echo
@@ -262,11 +260,9 @@ clean: header
 	@echo '--> Cleaning directory...'
 	rm -rf bin
 	rm -rf ${GOPATH}/bin/${NODE_DISK_MANAGER}
-	rm -rf ${GOPATH}/bin/${NODE_DISK_MANAGER_GRPC}
 	rm -rf ${GOPATH}/bin/${NODE_DISK_OPERATOR}
 	rm -rf ${GOPATH}/bin/${NODE_DISK_EXPORTER}
 	rm -rf Dockerfile.ndm
-	rm -rf Dockerfile.grpc
 	rm -rf Dockerfile.ndo
 	rm -rf Dockerfile.exporter
 	@echo '--> Done cleaning.'

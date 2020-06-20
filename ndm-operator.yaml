@@ -124,13 +124,6 @@ spec:
       hostPID: true
       serviceAccountName: openebs-ndm-operator
       containers:
-      - name: ndm-grpc-api
-        image: openebs/node-disk-manager-grpc-amd64:ci 
-        env:
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
       - name: node-disk-manager
         image: openebs/node-disk-manager-amd64:ci
         args:
