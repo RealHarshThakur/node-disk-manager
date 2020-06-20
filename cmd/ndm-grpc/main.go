@@ -33,13 +33,13 @@ func main() {
 	gs := grpc.NewServer()
 
 	// Creates an instance of Info
-	is := services.NewInfo(log)
+	is := services.NewInfo()
 
 	// Creates an instance of Service
-	ss := services.NewService(log)
+	ss := services.NewService()
 
 	// Creates an instance of Node
-	ns := services.NewNode(log)
+	ns := services.NewNode()
 
 	// This helps clients determine which services are available to call
 	reflection.Register(gs)

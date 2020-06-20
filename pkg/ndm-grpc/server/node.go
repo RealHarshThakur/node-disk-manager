@@ -13,11 +13,6 @@ limitations under the License.
 
 package server
 
-import (
-	"github.com/sirupsen/logrus"
-)
-
 // Node defines the type
 type Node struct {
-	Log *logrus.Logger
 }

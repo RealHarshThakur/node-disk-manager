@@ -3,6 +3,7 @@ cscope*
 tags
 *.swp
 *.swo
+dev.yaml
 service.yaml
 docker.sh
 Dockerfile.grpc

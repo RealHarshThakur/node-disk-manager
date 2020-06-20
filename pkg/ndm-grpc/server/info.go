@@ -13,11 +13,6 @@ limitations under the License.
 
 package server
 
-import (
-	"github.com/sirupsen/logrus"
-)
-
 // Info defines the type
 type Info struct {
-	Log *logrus.Logger
 }

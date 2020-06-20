@@ -18,12 +18,12 @@ import (
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"k8s.io/klog"
 
 	"context"
 	"strings"
 
 	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
-	"github.com/sirupsen/logrus"
 )
 
 // Service helps in using types defined in Server
@@ -32,19 +32,19 @@ type Service struct {
 }
 
 // NewService is a constructor
-func NewService(l *logrus.Logger) *Service {
-	return &Service{server.Service{Log: l}}
+func NewService() *Service {
+	return &Service{}
 }
 
 // Status gives the status of iSCSI service
 func (s *Service) Status(ctx context.Context, null *protos.Null) (*protos.ISCSIStatus, error) {
 
-	s.Log.Info("Finding ISCSI status")
+	klog.Info("Finding ISCSI status")
 
 	// This will fetch the processes regardless of which OS is being used
 	processList, err := ps.Processes()
 	if err != nil {
-		s.Log.Error(err)
+		klog.Error(err)
 		return nil, status.Errorf(codes.Internal, "Error fetching the processes")
 	}
 
@@ -67,7 +67,7 @@ func checkISCSI(s *Service, processList []ps.Process, found *bool) {
 	for _, p := range processList {
 
 		if strings.Contains(p.Executable(), "iscsid") {
-			s.Log.Infof("%v is running with process id %v", p.Executable(), p.Pid())
+			klog.Infof("%v is running with process id %v", p.Executable(), p.Pid())
 			*found = true
 		}
 	}

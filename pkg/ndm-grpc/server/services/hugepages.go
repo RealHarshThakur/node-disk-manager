@@ -22,12 +22,13 @@ import (
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"k8s.io/klog"
 )
 
 // SetHugepages service can set 2MB hugepages on a node
 func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.HugepagesResult, error) {
 
-	n.Log.Info("Setting Hugepages")
+	klog.Info("Setting Hugepages")
 
 	hugepages := protos.Hugepages{
 		Pages: h.Pages,
@@ -36,7 +37,7 @@ func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.H
 	msg := []byte(strconv.Itoa(int(hugepages.Pages)))
 	err := ioutil.WriteFile("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages", msg, 0644)
 	if err != nil {
-		n.Log.Errorf("Error setting huge pages: %v", err)
+		klog.Errorf("Error setting huge pages: %v", err)
 		return nil, status.Errorf(codes.Internal, "Error setting hugepages")
 	}
 
@@ -46,17 +47,17 @@ func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.H
 // GetHugepages services gets the number of hugepages on a node
 func (n *Node) GetHugepages(ctx context.Context, null *protos.Null) (*protos.Hugepages, error) {
 
-	n.Log.Info("Getting the number of hugepages")
+	klog.Info("Getting the number of hugepages")
 
 	hugepages, err := ioutil.ReadFile("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages")
 	if err != nil {
-		n.Log.Errorf("Error fetching number of hugepages %v", err)
+		klog.Errorf("Error fetching number of hugepages %v", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching the number of hugepages set on the node")
 	}
 
 	pages, err := strconv.Atoi(strings.TrimRight(string(hugepages), "\n"))
 	if err != nil {
-		n.Log.Errorf("Error converting number of hugepages %v", err)
+		klog.Errorf("Error converting number of hugepages %v", err)
 		return nil, status.Errorf(codes.Internal, "Error converting the number of hugepages set on the node")
 	}
 

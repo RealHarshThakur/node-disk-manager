@@ -19,7 +19,6 @@ import (
 	"testing"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
-	"github.com/sirupsen/logrus"
 )
 
 // TestFindNodeName tests FindNodeName service
@@ -28,9 +27,8 @@ func TestFindNodeName(t *testing.T) {
 
 	var ctx context.Context
 	var null *protos.Null
-	l := logrus.New()
 
-	n := NewNode(l)
+	n := NewNode()
 	res, err := n.Name(ctx, null)
 	if err != nil {
 		t.Error("Error in finding node name")

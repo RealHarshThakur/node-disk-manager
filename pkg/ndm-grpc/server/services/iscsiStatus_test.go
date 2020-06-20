@@ -17,8 +17,6 @@ import (
 	"testing"
 
 	ps "github.com/mitchellh/go-ps"
-
-	"github.com/sirupsen/logrus"
 )
 
 type Process struct {
@@ -45,8 +43,7 @@ func (p Process) Executable() string {
 //TestcheckISCSI checks the ISCSI service
 func TestCheckISCSI(t *testing.T) {
 
-	l := logrus.New()
-	s := NewService(l)
+	s := NewService()
 
 	mockProcess := Process{
 		PidMock:  100,

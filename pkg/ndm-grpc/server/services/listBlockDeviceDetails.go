@@ -18,6 +18,7 @@ import (
 	"github.com/openebs/node-disk-manager/pkg/smart"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"k8s.io/klog"
 
 	"context"
 )
@@ -25,18 +26,18 @@ import (
 // ListBlockDeviceDetails gives the details about the disk from SMART
 func (n *Node) ListBlockDeviceDetails(ctx context.Context, bd *protos.BlockDevice) (*protos.BlockDeviceDetails, error) {
 
-	n.Log.Info("Listing Device Details")
+	klog.Info("Listing Device Details")
 
 	device := smart.Identifier{
 		DevPath: bd.Name,
 	}
 	info, err := device.SCSIBasicDiskInfo()
 	if len(err) != 0 {
-		n.Log.Errorf("Error fetching block device details %v", err)
+		klog.Errorf("Error fetching block device details %v", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching disk details")
 	}
-	n.Log.Info(info.BasicDiskAttr)
-	n.Log.Info(info.ATADiskAttr)
+	klog.Info(info.BasicDiskAttr)
+	klog.Info(info.ATADiskAttr)
 
 	return &protos.BlockDeviceDetails{
 		Compliance:       info.BasicDiskAttr.Compliance,

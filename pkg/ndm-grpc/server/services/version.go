@@ -17,7 +17,7 @@ import (
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
 	"github.com/openebs/node-disk-manager/pkg/version"
-	"github.com/sirupsen/logrus"
+	"k8s.io/klog"
 
 	"context"
 )
@@ -28,14 +28,14 @@ type Info struct {
 }
 
 // NewInfo is a constructor
-func NewInfo(l *logrus.Logger) *Info {
-	return &Info{server.Info{Log: l}}
+func NewInfo() *Info {
+	return &Info{server.Info{}}
 }
 
 // FindVersion detects the version and gitCommit of NDM
 func (i *Info) FindVersion(ctx context.Context, null *protos.Null) (*protos.VersionInfo, error) {
 
-	i.Log.Infof("Print Version : %v , commit hash : %v", version.GetVersion(), version.GetGitCommit())
+	klog.Infof("Print Version : %v , commit hash : %v", version.GetVersion(), version.GetGitCommit())
 
 	return &protos.VersionInfo{Version: version.GetVersion(), GitCommit: version.GetGitCommit()}, nil
 

@@ -19,15 +19,13 @@ import (
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/sirupsen/logrus"
+	"k8s.io/klog"
 )
 
 // TestGetParentDisks tests the GetParentDisks function
-func TestGetParentDisks(t *testing.T) {
+func TestGetAllTypes(t *testing.T) {
 
-	l := logrus.New()
-	n := NewNode(l)
+	n := NewNode()
 
 	mockDevice := &apis.BlockDevice{
 		ObjectMeta: metav1.ObjectMeta{
@@ -46,22 +44,28 @@ func TestGetParentDisks(t *testing.T) {
 		},
 		Items: mockblockDevices,
 	}
-	pd, err := GetParentDisks(n, mockDeviceList)
+	pd, _, _, err := GetAllTypes(n, mockDeviceList)
 	if err != nil {
 		t.Errorf("Getting parent disks failed %v", err)
 	}
-	n.Log.Infof("Parent disks are: %v", pd)
+	klog.Infof("Parent disks are: %v", pd)
 }
 
 // TestGetPartitions get the partitions of the block device
 func TestGetPartitions(t *testing.T) {
 
-	l := logrus.New()
-	n := NewNode(l)
+	n := NewNode()
 
-	partitions := GetPartitions(n, "/dev/sda")
+	mockDevice := apis.BlockDevice{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: make(map[string]string),
+			Name:   "sda",
+		},
+	}
+
+	partitions := GetPartitions(n, mockDevice.Name)
 
 	if len(partitions) != 0 {
-		n.Log.Infof("Partitions found are: %v", partitions)
+		klog.Infof("Partitions found are: %v", partitions)
 	}
 }

@@ -16,6 +16,7 @@ package services
 import (
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	"k8s.io/klog"
 
 	"context"
 
@@ -26,7 +27,6 @@ import (
 
 	"github.com/openebs/node-disk-manager/pkg/hierarchy"
 	"github.com/openebs/node-disk-manager/pkg/ndm-grpc/server"
-	"github.com/sirupsen/logrus"
 )
 
 // Node helps in using types defined in Server
@@ -35,8 +35,8 @@ type Node struct {
 }
 
 // NewNode is a constructor
-func NewNode(l *logrus.Logger) *Node {
-	return &Node{server.Node{Log: l}}
+func NewNode() *Node {
+	return &Node{server.Node{}}
 }
 
 type disks []protos.BlockDevice
@@ -44,63 +44,38 @@ type disks []protos.BlockDevice
 // ListBlockDevices gives the status of iSCSI service
 func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos.BlockDevices, error) {
 
-	n.Log.Info("Listing block devices")
+	klog.Info("Listing block devices")
 
 	ctrl, err := controller.NewController()
 	if err != nil {
-		n.Log.Errorf("Error creating a controller %v", err)
+		klog.Errorf("Error creating a controller %v", err)
 		return nil, status.Errorf(codes.NotFound, "Namespace not found")
 	}
 
 	err = ctrl.SetControllerOptions(controller.NDMOptions{ConfigFilePath: "/host/node-disk-manager.config"})
 	if err != nil {
-		n.Log.Errorf("Error setting config to controller %v", err)
+		klog.Errorf("Error setting config to controller %v", err)
 		return nil, status.Errorf(codes.Internal, "Error setting config to controller")
 	}
 
 	blockDeviceList, err := ctrl.ListBlockDeviceResource(false)
 	if err != nil {
-		n.Log.Errorf("Error listing block devices %v", err)
+		klog.Errorf("Error listing block devices %v", err)
 		return nil, status.Errorf(codes.Internal, "Error fetching list of disks")
 	}
 
 	if len(blockDeviceList.Items) == 0 {
-		n.Log.Info("No items found")
+		klog.Info("No items found")
 	}
 
 	blockDevices := make([]*protos.BlockDevice, 0)
 
-	parentNames, err := GetParentDisks(n, blockDeviceList)
+	// Currently, we have support for only parentNames(lsblk equivalent is a Disk)
+	// Reason to leave out partitions from this is to have a parent-partition relationship in response
+	parentNames, _, _, err := GetAllTypes(n, blockDeviceList)
 	if err != nil {
-		n.Log.Errorf("Error fetching Parent disks %v", err)
+		klog.Errorf("Error fetching Parent disks %v", err)
 	}
-
-	// Commenting this section for now as Holders and Slaves do not yet support lsblk types
-	// holderNames, err := GetHolders(n, blockDeviceList)
-	// if err != nil {
-	// 	n.Log.Errorf("Error fetching Holders %v", err)
-	// }
-
-	// slaveNames, err := GetSlaves(n, blockDeviceList)
-	// if err != nil {
-	// 	n.Log.Errorf("Error fetching slaves %v", err)
-	// }
-
-	// for _, name := range holderNames {
-
-	// 	blockDevices = append(blockDevices, &protos.BlockDevice{
-	// 		Name: name,
-	// 		Type: "Holder",
-	// 	})
-	// }
-
-	// for _, name := range slaveNames {
-
-	// 	blockDevices = append(blockDevices, &protos.BlockDevice{
-	// 		Name: name,
-	// 		Type: "Slaves",
-	// 	})
-	// }
 
 	for _, name := range parentNames {
 
@@ -116,38 +91,39 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 	}, nil
 }
 
-// GetHolders gets the holders of a particular device
-func GetHolders(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
+// GetAllTypes takes a list of all block devices found on nodes and returns Parents, Holders and Slaves( in the same order as slices)
+func GetAllTypes(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, []string, []string, error) {
+	ParentDeviceNames := make([]string, 0)
+	HolderDeviceNames := make([]string, 0)
+	SlaveDeviceNames := make([]string, 0)
 
-	blockDeviceNames := make([]string, 0)
 	for _, bd := range BL.Items {
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
 		if err != nil {
-			n.Log.Errorf("Error fetching dependents of the disk %v", err)
-			return nil, err
+			klog.Errorf("Error fetching dependents of the disk %v", err)
+			return nil, nil, nil, err
 		}
-		blockDeviceNames = depDevices.Holders
+		// Handling of disks types except partitions. This is to ensure we have parent-partition relationship while sending a response
+		if len(depDevices.Parent) == 0 {
+			klog.Infof("There are no parent disks for %v", bd.Name)
+		} else {
+			ParentDeviceNames = append(ParentDeviceNames, depDevices.Parent)
+		}
+		if len(depDevices.Holders) == 0 {
+			klog.Infof("There are no Holder disks for %v", bd.Name)
+		} else {
+			HolderDeviceNames = append(HolderDeviceNames, depDevices.Holders...)
+		}
+		if len(depDevices.Slaves) == 0 {
+			klog.Infof("There are no Slave disks for %v", bd.Name)
+		} else {
+			SlaveDeviceNames = append(SlaveDeviceNames, depDevices.Slaves...)
+		}
 
 	}
-	return blockDeviceNames, nil
-}
 
-// GetSlaves gets the holders of a particular device
-func GetSlaves(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
-
-	blockDeviceNames := make([]string, 0)
-	for _, bd := range BL.Items {
-		device := hierarchy.Device{Path: bd.Spec.Path}
-		depDevices, err := device.GetDependents()
-		if err != nil {
-			n.Log.Errorf("Error fetching dependents of the disk %v", err)
-			return nil, err
-		}
-		blockDeviceNames = depDevices.Slaves
-
-	}
-	return blockDeviceNames, nil
+	return ParentDeviceNames, HolderDeviceNames, SlaveDeviceNames, nil
 }
 
 // GetPartitions gets the partitions given a parent disk name
@@ -157,36 +133,16 @@ func GetPartitions(n *Node, name string) []string {
 
 	depDevices, err := device.GetDependents()
 	if err != nil {
-		n.Log.Errorf("Error fetching dependents of the disk %v", err)
+		klog.Errorf("Error fetching dependents of the disk %v", err)
 		return nil
 	}
 
 	if len(depDevices.Partitions) == 0 {
-		n.Log.Infof("This device has no partitions")
+		klog.Infof("This device has no partitions")
 		return nil
 	}
 	partitonNames := depDevices.Partitions
 
 	return partitonNames
 
-}
-
-//GetParentDisks returns the names of disks which are parents(have partitions and aren't holders/slaves)
-func GetParentDisks(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, error) {
-
-	blockDeviceNames := make([]string, 0)
-	for _, bd := range BL.Items {
-		device := hierarchy.Device{Path: bd.Spec.Path}
-		depDevices, err := device.GetDependents()
-		if err != nil {
-			n.Log.Errorf("Error fetching dependents of the disk %v", err)
-			return nil, err
-		}
-		if len(depDevices.Parent) == 0 {
-			n.Log.Infof("This could be a holder or slave")
-			return nil, err
-		}
-		blockDeviceNames = append(blockDeviceNames, depDevices.Parent)
-	}
-	return blockDeviceNames, nil
 }

@@ -18,6 +18,7 @@ import (
 	"os"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
+	"k8s.io/klog"
 )
 
 // Name is used to find the name of the worker node NDM is deployed on
@@ -26,7 +27,7 @@ func (n *Node) Name(ctx context.Context, null *protos.Null) (*protos.NodeName, e
 	// Fetch the environment variable
 	nodeName := os.Getenv("NODE_NAME")
 
-	n.Log.Infof("Node name is : %v", nodeName)
+	klog.Infof("Node name is : %v", nodeName)
 
 	return &protos.NodeName{NodeName: nodeName}, nil
 

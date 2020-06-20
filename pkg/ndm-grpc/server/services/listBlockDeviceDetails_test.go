@@ -18,15 +18,13 @@ import (
 	"testing"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
-
-	"github.com/sirupsen/logrus"
+	"k8s.io/klog"
 )
 
 // TestGetParentDisks tests the GetParentDisks function
 func TestListBlockDeviceDetails(t *testing.T) {
 
-	l := logrus.New()
-	n := NewNode(l)
+	n := NewNode()
 
 	mockDevice := &protos.BlockDevice{
 		Name: "/dev/sda",
@@ -38,6 +36,6 @@ func TestListBlockDeviceDetails(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error listing details %v", err)
 	}
-	n.Log.Info(diskinfo)
+	klog.Info(diskinfo)
 
 }
