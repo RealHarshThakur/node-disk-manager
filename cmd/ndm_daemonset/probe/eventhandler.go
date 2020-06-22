@@ -18,6 +18,7 @@ package probe
 
 import (
 	"fmt"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
@@ -154,6 +155,18 @@ func (pe *ProbeEvent) initOrErrorEvent() {
 	if err != nil {
 		klog.Error(err)
 	}
+}
+
+// Rescan sync etcd
+func (pe *ProbeEvent) Rescan() error {
+	udevProbe := newUdevProbe(pe.Controller)
+	defer udevProbe.free()
+	err := udevProbe.scan()
+	if err != nil {
+		klog.Error(err)
+		return err
+	}
+	return nil
 }
 
 // generateUUID creates a new UUID based on the algorithm proposed in

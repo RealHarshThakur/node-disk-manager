@@ -18,6 +18,7 @@ package probe
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
@@ -26,6 +27,7 @@ import (
 	libudevwrapper "github.com/openebs/node-disk-manager/pkg/udev"
 	"github.com/openebs/node-disk-manager/pkg/udevevent"
 	"github.com/openebs/node-disk-manager/pkg/util"
+	"golang.org/x/sync/semaphore"
 
 	"k8s.io/klog"
 )
@@ -69,10 +71,12 @@ var udevProbeRegister = func() {
 // udevProbe contains require variables for scan , populate diskInfo and push
 // resource in etcd
 type udevProbe struct {
-	controller    *controller.Controller
-	udev          *libudevwrapper.Udev
-	udevDevice    *libudevwrapper.UdevDevice
-	udevEnumerate *libudevwrapper.UdevEnumerate
+	controller        *controller.Controller
+	udev              *libudevwrapper.Udev
+	udevDevice        *libudevwrapper.UdevDevice
+	udevEnumerate     *libudevwrapper.UdevEnumerate
+	requestInProgress bool
+	sync.Mutex
 }
 
 // newUdevProbe returns udevProbe struct which helps to setup probe listen and scan
@@ -122,8 +126,19 @@ func (up *udevProbe) Start() {
 	probeEvent.scan()
 }
 
+var sem = semaphore.NewWeighted(1)
+
 // scan scans system for disks and send add event via channel
 func (up *udevProbe) scan() error {
+	// up.Lock()
+	// time.Sleep(time.Minute)
+	// defer up.Unlock()
+
+	if !sem.TryAcquire(1) {
+		return errors.New("Scan is in progress")
+	}
+	defer sem.Release(1)
+
 	if (up.udev == nil) || (up.udevEnumerate == nil) {
 		return errors.New("unable to scan udev and udev enumerate is nil")
 	}

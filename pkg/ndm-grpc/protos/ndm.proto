@@ -35,7 +35,13 @@ service Node{
 
   // Gets the number of huge pages set on the node
   rpc GetHugepages(Null) returns (Hugepages);
+  
+  // Rescan syncs etcd and NDM's local state
+  rpc Rescan(Null) returns (Message);
+}
 
+message Message{
+  string msg = 1;
 }
 
 message Hugepages{
