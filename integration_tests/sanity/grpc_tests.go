@@ -28,7 +28,6 @@ import (
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
-	"k8s.io/klog"
 )
 
 var _ = Describe("gRPC tests", func() {
@@ -67,13 +66,11 @@ var _ = Describe("gRPC tests", func() {
 			PermitWithoutStream: true,             // send pings even without active streams
 		}
 
-		conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure(),
+		conn, err := grpc.Dial("127.0.0.1:9090", grpc.WithInsecure(),
 			grpc.WithKeepaliveParams(kacp),
 		)
+		Expect(err).NotTo(HaveOccurred())
 
-		if err != nil {
-			klog.Errorf("connection failed: %v", err)
-		}
 		defer conn.Close()
 
 		It("iSCSI test", func() {
