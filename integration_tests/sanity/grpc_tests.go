@@ -71,8 +71,8 @@ var _ = Describe("gRPC tests", func() {
 
 			By("Checking when ISCSI is disabled")
 			res, err := isc.Status(ctx, null)
-			Expect(err).NotTo(HaveOccured())
-			Expect(res.GetStatus()).To(Equal(false))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.GetStatus()).To(BeFalse())
 		})
 	})
 })
