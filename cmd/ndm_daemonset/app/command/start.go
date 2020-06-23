@@ -97,7 +97,7 @@ func NewCmdStart() *cobra.Command {
 
 			l, err := net.Listen("tcp", "0.0.0.0:9090")
 			if err != nil {
-				klog.Errorf("Unable to listen", err)
+				klog.Errorf("Unable to listen %f", err)
 				os.Exit(1)
 			}
 
