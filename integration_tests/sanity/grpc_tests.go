@@ -88,8 +88,13 @@ var _ = Describe("gRPC tests", func() {
 			Expect(res.GetStatus()).To(BeFalse())
 
 			By("Checking when ISCSI is enabled ")
-			utils.RunCommandWithSudo("sudo systemctl enable iscsid")
-			utils.RunCommandWithSudo("sudo systemctl start iscsid")
+			err = utils.RunCommandWithSudo("sudo systemctl enable iscsid")
+			Expect(err).NotTo(HaveOccurred())
+			err = utils.RunCommandWithSudo("sudo systemctl start iscsid")
+			Expect(err).NotTo(HaveOccurred())
+			res, err = isc.Status(ctx, null)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.GetStatus()).To(BeTrue())
 
 		})
 	})
