@@ -23,6 +23,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
+	"github.com/openebs/node-disk-manager/integration_tests/utils"
+
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -67,7 +69,7 @@ var _ = Describe("gRPC tests", func() {
 
 		conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure(),
 			grpc.WithKeepaliveParams(kacp),
-			grpc.WithBlock())
+		)
 
 		if err != nil {
 			klog.Errorf("connection failed: %v", err)
@@ -84,6 +86,11 @@ var _ = Describe("gRPC tests", func() {
 			res, err := isc.Status(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res.GetStatus()).To(BeFalse())
+
+			By("Checking when ISCSI is enabled ")
+			utils.RunCommandWithSudo("sudo systemctl enable iscsid")
+			utils.RunCommandWithSudo("sudo systemctl start iscsid")
+
 		})
 	})
 })
