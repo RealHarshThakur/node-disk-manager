@@ -106,12 +106,16 @@ var _ = Describe("gRPC tests", func() {
 			// utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
 			output, err := utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
 			Expect(err).NotTo(HaveOccurred())
-			fmt.Println(output)
+			fmt.Fprintf(GinkgoWriter, "Output of linking is %v", output)
 
 			// partitionName := physicalDisk.Name + "p1"
 			// utils.ExecCommandWithSudo("ln -s " + partitionName + "/dev/sdz1")
 			partitions := make([]string, 0)
 			// partitions = append(partitions, "/dev/sdz1")
+
+			output, err = utils.ExecCommandWithSudo("lsblk -a")
+			Expect(err).NotTo(HaveOccurred())
+			fmt.Fprintf(GinkgoWriter, "Output of lsblk is %v", output)
 
 			bd := &protos.BlockDevice{
 				Name:       "/dev/sdz",
