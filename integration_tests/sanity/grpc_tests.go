@@ -18,6 +18,7 @@ package sanity
 
 import (
 	"context"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -105,7 +106,7 @@ var _ = Describe("gRPC tests", func() {
 			// utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
 			output, err := utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
 			Expect(err).NotTo(HaveOccurred())
-			By(output)
+			fmt.Println(output)
 
 			// partitionName := physicalDisk.Name + "p1"
 			// utils.ExecCommandWithSudo("ln -s " + partitionName + "/dev/sdz1")
@@ -122,7 +123,7 @@ var _ = Describe("gRPC tests", func() {
 			_ = &protos.BlockDevices{
 				Blockdevices: bds,
 			}
-			Expect(nil).To(Equal(nil))
+			Expect(nil).To(BeNil())
 
 		})
 
