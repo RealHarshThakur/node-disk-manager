@@ -19,30 +19,24 @@ package sanity
 import (
 	"strings"
 
+	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 )
 
-// import (
-// 	. "github.com/onsi/ginkgo"
-// 	. "github.com/onsi/gomega"
-// 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
-// 	"strings"
-// )
-
-// const (
-// 	// SparseBlockDeviceName is the name given to blockDevice CRs created for a
-// 	// sparse image
-// 	SparseBlockDeviceName = "sparse-"
-// 	// BlockDeviceName is the name of the blockDevice CRs created corresponding to
-// 	// physical/virtual disks or blockdevices
-// 	BlockDeviceName = "blockdevice-"
-// 	// DiskImageSize is the default file size(1GB) used while creating backing image
-// 	DiskImageSize = 1073741824
-// 	// OperatorPodPrefix is the pod name for NDM operator
-// 	OperatorPodPrefix = "node-disk-operator"
-// 	// DaemonSetPodPrefix is the pod name for NDM daemon
-// 	DaemonSetPodPrefix = "node-disk-manager"
-// )
+const (
+	// SparseBlockDeviceName is the name given to blockDevice CRs created for a
+	// sparse image
+	SparseBlockDeviceName = "sparse-"
+	// BlockDeviceName is the name of the blockDevice CRs created corresponding to
+	// physical/virtual disks or blockdevices
+	BlockDeviceName = "blockdevice-"
+	// DiskImageSize is the default file size(1GB) used while creating backing image
+	DiskImageSize = 1073741824
+	// OperatorPodPrefix is the pod name for NDM operator
+	OperatorPodPrefix = "node-disk-operator"
+	// DaemonSetPodPrefix is the pod name for NDM daemon
+	DaemonSetPodPrefix = "node-disk-manager"
+)
 
 // var _ = Describe("NDM Setup Tests", func() {
 
