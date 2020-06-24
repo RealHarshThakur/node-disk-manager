@@ -104,8 +104,8 @@ var _ = Describe("gRPC tests", func() {
 
 			// utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
 			output, err := utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
-			By(output)
 			Expect(err).NotTo(HaveOccurred())
+			By(output)
 
 			// partitionName := physicalDisk.Name + "p1"
 			// utils.ExecCommandWithSudo("ln -s " + partitionName + "/dev/sdz1")
@@ -122,7 +122,7 @@ var _ = Describe("gRPC tests", func() {
 			_ = &protos.BlockDevices{
 				Blockdevices: bds,
 			}
-			Expect(res).To(Equal(nil))
+			Expect(res.GetBlockdevices()).To(Equal(nil))
 
 		})
 
