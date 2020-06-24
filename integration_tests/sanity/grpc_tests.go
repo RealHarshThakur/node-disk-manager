@@ -99,7 +99,7 @@ var _ = Describe("gRPC tests", func() {
 
 			ctx := context.Background()
 			null := &protos.Null{}
-			_, err := ns.ListBlockDevices(ctx, null)
+			_, err = ns.ListBlockDevices(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
 
 			// utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
