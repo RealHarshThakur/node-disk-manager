@@ -118,7 +118,6 @@ var _ = Describe("gRPC tests", func() {
 			bdsList := &protos.BlockDevices{
 				Blockdevices: bds,
 			}
-
 			Expect(res).To(Equal(bdsList))
 
 		})
