@@ -34,6 +34,9 @@ spec:
         imagePullPolicy: Always
         securityContext:
           privileged: true
+      - ports: 
+          - containerPort : 9090
+            name : grpc
         volumeMounts:
         - name: config
           mountPath: /host/node-disk-manager.config
@@ -95,3 +98,4 @@ spec:
       - name: sparsepath
         hostPath:
           path: /var/openebs/sparse
+        

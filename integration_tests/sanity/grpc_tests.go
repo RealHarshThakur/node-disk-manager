@@ -64,7 +64,7 @@ var _ = Describe("gRPC tests", func() {
 		// 	PermitWithoutStream: true,             // send pings even without active streams
 		// }
 
-		conn, err := grpc.Dial("127.0.0.1:9090", grpc.WithInsecure()) // grpc.WithKeepaliveParams(kacp),
+		conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure()) // grpc.WithKeepaliveParams(kacp),
 
 		Expect(err).NotTo(HaveOccurred())
 
