@@ -34,9 +34,10 @@ var _ = Describe("gRPC tests", func() {
 	var err error
 	var k8sClient k8s.K8sClient
 	physicalDisk := udev.NewDisk(DiskImageSize)
-	_ = physicalDisk.AttachDisk()
+	err = physicalDisk.AttachDisk()
 
 	BeforeEach(func() {
+		Expect(err).NotTo(HaveOccurred())
 		By("getting a new client set")
 		k8sClient, _ = k8s.GetClientSet()
 
@@ -102,7 +103,8 @@ var _ = Describe("gRPC tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
-			_, err = utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
+			output, err := utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
+			By(output)
 			Expect(err).NotTo(HaveOccurred())
 
 			// partitionName := physicalDisk.Name + "p1"
