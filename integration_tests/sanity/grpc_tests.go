@@ -18,7 +18,6 @@ package sanity
 
 import (
 	"context"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -27,7 +26,6 @@ import (
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 )
 
 var _ = Describe("gRPC tests", func() {
@@ -60,15 +58,14 @@ var _ = Describe("gRPC tests", func() {
 	})
 	Context("gRPC services", func() {
 
-		kacp := keepalive.ClientParameters{
-			Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
-			Timeout:             5 * time.Second,  // wait 5 second for ping back
-			PermitWithoutStream: true,             // send pings even without active streams
-		}
+		// kacp := keepalive.ClientParameters{
+		// 	Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
+		// 	Timeout:             5 * time.Second,  // wait 5 second for ping back
+		// 	PermitWithoutStream: true,             // send pings even without active streams
+		// }
 
-		conn, err := grpc.Dial("127.0.0.1:9090", grpc.WithInsecure(),
-			grpc.WithKeepaliveParams(kacp),
-		)
+		conn, err := grpc.Dial("127.0.0.1:9090", grpc.WithInsecure()) // grpc.WithKeepaliveParams(kacp),
+
 		Expect(err).NotTo(HaveOccurred())
 
 		defer conn.Close()
