@@ -31,13 +31,13 @@ spec:
         args:
           - -v=2
 #          - --feature-gates="GPTBasedUUID"
-      - ports:
-          - name : grpc 
-            containerPort: 9090
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
-        # make udev database available inside container
+      - ports:
+        - name : grpc 
+          containerPort: 9090
+      # make udev database available inside container
         volumeMounts:
         - name: config
           mountPath: /host/node-disk-manager.config
