@@ -25,6 +25,7 @@ import (
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
+	"k8s.io/klog"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc"
@@ -115,7 +116,7 @@ var _ = Describe("gRPC tests", func() {
 
 			output, err = utils.ExecCommandWithSudo("lsblk -a")
 			Expect(err).NotTo(HaveOccurred())
-			fmt.Fprintf(GinkgoWriter, "Output of lsblk is %v", output)
+			klog.Infof("Output of lsblk is %v", output)
 
 			bd := &protos.BlockDevice{
 				Name:       "/dev/sdz",
