@@ -34,9 +34,6 @@ spec:
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
-      - ports:
-        - name : grpc 
-          containerPort: 9090
       # make udev database available inside container
         volumeMounts:
         - name: config
