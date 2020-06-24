@@ -35,7 +35,7 @@ install:
       mv $TRAVIS_BUILD_DIR $GOPATH/src/github.com/openebs;
       cd $GOPATH/src/github.com/openebs/node-disk-manager;
     fi
-  - make install-dep
+  # - make install-dep
   - make install-test-infra
 
 before_script:
@@ -60,8 +60,8 @@ after_success:
   - make push
   - bash <(curl -s https://codecov.io/bash)
 
-notifications:
-  email:
-    recipients:
-      - akhil.mohan@mayadata.io
-      - kiran.mova@mayadata.io
+# notifications:
+#   email:
+#     recipients:
+#       - akhil.mohan@mayadata.io
+#       - kiran.mova@mayadata.io
