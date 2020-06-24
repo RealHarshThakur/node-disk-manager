@@ -18,6 +18,7 @@ package sanity
 
 import (
 	"context"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -77,6 +78,7 @@ var _ = Describe("gRPC tests", func() {
 			By("Checking when ISCSI is disabled")
 			res, err := isc.Status(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
+			fmt.Fprintf(GinkgoWriter, " Value of ISCSI status is : ", res.GetStatus())
 			Expect(res.GetStatus()).To(BeFalse())
 
 			By("Checking when ISCSI is enabled ")
