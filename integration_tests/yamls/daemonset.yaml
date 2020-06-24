@@ -30,7 +30,7 @@ spec:
         image: harshthakur/node-disk-manager:ci
         args:
           - -v=4
-          - --feature-gates="GPTBasedUUID"
+          # - --feature-gates="GPTBasedUUID"
         imagePullPolicy: Always
         securityContext:
           privileged: true
