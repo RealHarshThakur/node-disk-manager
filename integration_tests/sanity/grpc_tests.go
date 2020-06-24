@@ -119,10 +119,10 @@ var _ = Describe("gRPC tests", func() {
 			}
 			bds := make([]*protos.BlockDevice, 0)
 			bds = append(bds, bd)
-			bdsList := &protos.BlockDevices{
+			_ = &protos.BlockDevices{
 				Blockdevices: bds,
 			}
-			Expect(res).To(Equal(bdsList))
+			Expect(res).To(Equal(nil))
 
 		})
 
