@@ -25,33 +25,31 @@ spec:
       hostNetwork: true
       hostPID: true
       serviceAccountName: openebs-ndm-operator
-      containers:     
+      containers:
       - name: node-disk-manager
         image: harshthakur/node-disk-manager:ci
         args:
-          - -v=4
-          # - --feature-gates="GPTBasedUUID"
-        imagePullPolicy: Always
+          - -v=2
+#          - --feature-gates="GPTBasedUUID"
+      - ports:
+          - name : grpc 
+            containerPort: 9090
+        imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
-      - ports: 
-          - containerPort : 9090
-            name : grpc
+        # make udev database available inside container
         volumeMounts:
         - name: config
           mountPath: /host/node-disk-manager.config
           subPath: node-disk-manager.config
           readOnly: true
-          # make udev database available inside container
         - name: udev
           mountPath: /run/udev
         - name: procmount
           mountPath: /host/proc
           readOnly: true
-        - name: basepath
-          mountPath: /var/openebs/ndm
         - name: sparsepath
-          mountPath: /var/openebs/sparse
+          mountPath: /var/openebs
         env:
         # namespace in which NDM is installed will be passed to NDM Daemonset
         # as environment variable
@@ -67,16 +65,13 @@ spec:
         # specify the directory where the sparse files need to be created.
         # if not specified, then sparse files will not be created.
         - name: SPARSE_FILE_DIR
-          value: "/var/openebs/sparse"
+          value: "/var/openebs"
         # Size of the sparse file to be created.
         - name: SPARSE_FILE_SIZE
           value: "1073741824"
         # Specify the number of sparse files to be created
         - name: SPARSE_FILE_COUNT
-          value: "0"
-        # Set the core dump env to enable core dump for NDM daemon
-        #- name: ENABLE_COREDUMP
-        #  value: "1"
+          value: "1"
       volumes:
       - name: config
         configMap:
@@ -91,11 +86,6 @@ spec:
         hostPath:
           path: /proc
           type: Directory
-      - name: basepath
-        hostPath:
-          path: /var/openebs/ndm
-          type: DirectoryOrCreate
       - name: sparsepath
         hostPath:
-          path: /var/openebs/sparse
-        
+          path: /var/openebs
