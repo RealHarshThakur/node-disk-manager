@@ -100,10 +100,18 @@ var _ = Describe("gRPC tests", func() {
 			null := &protos.Null{}
 			res, err := ns.ListBlockDevices(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
+
+			utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
+			utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + "/dev/sdz")
+			partitionName := physicalDisk.Name + "p1"
+			utils.ExecCommandWithSudo("ln -s " + partitionName + "/dev/sdz1")
+			partitions := make([]string, 0)
+			partitions = append(partitions, "/dev/sdz1")
+
 			bd := &protos.BlockDevice{
-				Name:       physicalDisk.Name,
+				Name:       "/dev/sdz",
 				Type:       "Disk",
-				Partitions: make([]string, 0),
+				Partitions: partitions,
 			}
 			bds := make([]*protos.BlockDevice, 0)
 			bds = append(bds, bd)
