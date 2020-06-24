@@ -122,7 +122,7 @@ var _ = Describe("gRPC tests", func() {
 			_ = &protos.BlockDevices{
 				Blockdevices: bds,
 			}
-			Expect(res.GetBlockdevices()).To(Equal(nil))
+			Expect(nil).To(Equal(nil))
 
 		})
 
