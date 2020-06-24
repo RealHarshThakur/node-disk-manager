@@ -46,8 +46,7 @@ var _ = Describe("gRPC tests", func() {
 		Expect(ok).To(BeTrue())
 
 		k8s.WaitForReconciliation()
-		conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure()) // grpc.WithKeepaliveParams(kacp),
-		Expect(err).NotTo(HaveOccurred())
+
 	})
 	AfterEach(func() {
 		By("deleting the NDM deamonset")
@@ -66,9 +65,10 @@ var _ = Describe("gRPC tests", func() {
 		// 	PermitWithoutStream: true,             // send pings even without active streams
 		// }
 
-		defer conn.Close()
-
 		It("iSCSI test", func() {
+			conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure()) // grpc.WithKeepaliveParams(kacp),
+			Expect(err).NotTo(HaveOccurred())
+			defer conn.Close()
 
 			isc := protos.NewISCSIClient(conn)
 			ctx := context.Background()
