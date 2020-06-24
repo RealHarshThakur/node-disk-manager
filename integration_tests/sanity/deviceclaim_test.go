@@ -41,26 +41,26 @@ package sanity
 
 // var _ = Describe("BlockDevice Claim tests", func() {
 
-// 	var err error
-// 	var k8sClient k8s.K8sClient
-// 	physicalDisk := udev.NewDisk(DiskImageSize)
-// 	_ = physicalDisk.AttachDisk()
+// var err error
+// var k8sClient k8s.K8sClient
+// physicalDisk := udev.NewDisk(DiskImageSize)
+// _ = physicalDisk.AttachDisk()
 
-// 	BeforeEach(func() {
-// 		By("getting a new client set")
-// 		k8sClient, _ = k8s.GetClientSet()
+// BeforeEach(func() {
+// 	By("getting a new client set")
+// 	k8sClient, _ = k8s.GetClientSet()
 
-// 		By("creating the NDM Daemonset")
-// 		err = k8sClient.CreateNDMDaemonSet()
-// 		Expect(err).NotTo(HaveOccurred())
+// 	By("creating the NDM Daemonset")
+// 	err = k8sClient.CreateNDMDaemonSet()
+// 	Expect(err).NotTo(HaveOccurred())
 
-// 		By("waiting for the daemonset pod to be running")
-// 		ok := WaitForPodToBeRunningEventually(DaemonSetPodPrefix)
-// 		Expect(ok).To(BeTrue())
+// 	By("waiting for the daemonset pod to be running")
+// 	ok := WaitForPodToBeRunningEventually(DaemonSetPodPrefix)
+// 	Expect(ok).To(BeTrue())
 
-// 		k8s.WaitForReconciliation()
-// 	})
-// 	AfterEach(func() {
+// 	k8s.WaitForReconciliation()
+// })
+// AfterEach(func() {
 // 		By("deleting the NDM deamonset")
 // 		err := k8sClient.DeleteNDMDaemonSet()
 // 		Expect(err).NotTo(HaveOccurred())

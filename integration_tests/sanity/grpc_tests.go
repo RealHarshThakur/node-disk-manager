@@ -22,6 +22,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
+	"github.com/openebs/node-disk-manager/integration_tests/udev"
 	"github.com/openebs/node-disk-manager/integration_tests/utils"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
@@ -32,6 +33,8 @@ var _ = Describe("gRPC tests", func() {
 
 	var err error
 	var k8sClient k8s.K8sClient
+	physicalDisk := udev.NewDisk(DiskImageSize)
+	_ = physicalDisk.AttachDisk()
 
 	BeforeEach(func() {
 		By("getting a new client set")
@@ -59,14 +62,8 @@ var _ = Describe("gRPC tests", func() {
 	})
 	Context("gRPC services", func() {
 
-		// kacp := keepalive.ClientParameters{
-		// 	Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
-		// 	Timeout:             5 * time.Second,  // wait 5 second for ping back
-		// 	PermitWithoutStream: true,             // send pings even without active streams
-		// }
-
 		It("iSCSI test", func() {
-			conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure()) // grpc.WithKeepaliveParams(kacp),
+			conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
 			Expect(err).NotTo(HaveOccurred())
 			defer conn.Close()
 
@@ -91,5 +88,32 @@ var _ = Describe("gRPC tests", func() {
 			Expect(res.GetStatus()).To(BeTrue())
 
 		})
+
+		It("List Block Devices test", func() {
+			conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+			Expect(err).NotTo(HaveOccurred())
+			defer conn.Close()
+
+			ns := protos.NewNodeClient(conn)
+
+			ctx := context.Background()
+			null := &protos.Null{}
+			res, err := ns.ListBlockDevices(ctx, null)
+			Expect(err).NotTo(HaveOccurred())
+			bd := &protos.BlockDevice{
+				Name:       physicalDisk.Name,
+				Type:       "Disk",
+				Partitions: make([]string, 0),
+			}
+			bds := make([]*protos.BlockDevice, 0)
+			bds = append(bds, bd)
+			bdsList := &protos.BlockDevices{
+				Blockdevices: bds,
+			}
+
+			Expect(res).To(Equal(bdsList))
+
+		})
+
 	})
 })
