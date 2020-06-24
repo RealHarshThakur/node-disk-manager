@@ -19,10 +19,10 @@ jobs:
   include:
     - os: linux
       arch: amd64
-    - os: linux
-      arch: arm64
-    - os: linux
-      arch: ppc64le
+    # - os: linux
+    #   arch: arm64
+    # - os: linux
+    #   arch: ppc64le
 
 addons:
   apt:
@@ -56,9 +56,9 @@ script:
   # - sudo -E env "PATH=$PATH" make test
   - sudo -E env "PATH=$PATH" make integration-test
 
-after_success:
-  - make push
-  - bash <(curl -s https://codecov.io/bash)
+# after_success:
+#   # - make push
+#   # - bash <(curl -s https://codecov.io/bash)
 
 # notifications:
 #   email:
