@@ -18,7 +18,6 @@ package sanity
 
 import (
 	"context"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -76,9 +75,10 @@ var _ = Describe("gRPC tests", func() {
 			null := &protos.Null{}
 
 			By("Checking when ISCSI is disabled")
+			err = utils.RunCommandWithSudo("sudo systemctl stop iscsid")
+			Expect(err).NotTo(HaveOccurred())
 			res, err := isc.Status(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
-			fmt.Fprintf(GinkgoWriter, " Value of ISCSI status is : %v", res.GetStatus())
 			Expect(res.GetStatus()).To(BeFalse())
 
 			By("Checking when ISCSI is enabled ")
