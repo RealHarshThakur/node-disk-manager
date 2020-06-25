@@ -72,7 +72,7 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 
 	// Currently, we have support for only parentNames(lsblk equivalent is a Disk)
 	// Reason to leave out partitions from this is to have a parent-partition relationship in response
-	parentNames, _, _, err := GetAllTypes(n, blockDeviceList)
+	parentNames, _, loopNames, _, _, sparseNames, err := GetAllTypes(n, blockDeviceList)
 	if err != nil {
 		klog.Errorf("Error fetching Parent disks %v", err)
 	}
@@ -86,30 +86,68 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 		})
 	}
 
+	for _, name := range loopNames {
+
+		blockDevices = append(blockDevices, &protos.BlockDevice{
+			Name: name,
+			Type: "Loop",
+		})
+	}
+
+	for _, name := range sparseNames {
+
+		blockDevices = append(blockDevices, &protos.BlockDevice{
+			Name: name,
+			Type: "Sparse",
+		})
+	}
+
 	return &protos.BlockDevices{
 		Blockdevices: blockDevices,
 	}, nil
 }
 
-// GetAllTypes takes a list of all block devices found on nodes and returns Parents, Holders and Slaves( in the same order as slices)
-func GetAllTypes(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, []string, []string, error) {
+// GetAllTypes takes a list of all block devices found on nodes and returns Parents, Partitions, Loop,  Holders, Slaves, Sparse( in the same order as slices)
+func GetAllTypes(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, []string, []string, []string, []string, []string, error) {
 	ParentDeviceNames := make([]string, 0)
 	HolderDeviceNames := make([]string, 0)
 	SlaveDeviceNames := make([]string, 0)
+	PartitionNames := make([]string, 0)
+	LoopNames := make([]string, 0)
+	Sparse := make([]string, 0)
 
 	for _, bd := range BL.Items {
+		klog.Infof("Devices are: %v ", bd.Spec.Path)
+
+		if bd.Spec.Details.DeviceType == "sparse" {
+			Sparse = append(Sparse, bd.Spec.Path)
+			continue
+		}
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
 		if err != nil {
 			klog.Errorf("Error fetching dependents of the disk %v", err)
-			return nil, nil, nil, err
+			continue
 		}
-		// Handling of disks types except partitions. This is to ensure we have parent-partition relationship while sending a response
-		if len(depDevices.Parent) == 0 {
-			klog.Infof("There are no parent disks for %v", bd.Name)
+
+		if depDevices.Parent == "" {
+			klog.Infof("There are no parent disks for %v or this is a parent disk", bd.Name)
+			if bd.Spec.Details.DeviceType == "disk" {
+				ParentDeviceNames = append(ParentDeviceNames, bd.Spec.Path)
+			} else if bd.Spec.Details.DeviceType == "loop" {
+				ParentDeviceNames = append(ParentDeviceNames, bd.Spec.Path)
+				LoopNames = append(LoopNames, bd.Spec.Path)
+			}
 		} else {
 			ParentDeviceNames = append(ParentDeviceNames, depDevices.Parent)
 		}
+
+		if len(depDevices.Partitions) == 0 {
+			klog.Infof("There are partitions for %v", bd.Name)
+		} else {
+			PartitionNames = append(PartitionNames, depDevices.Partitions...)
+		}
+
 		if len(depDevices.Holders) == 0 {
 			klog.Infof("There are no Holder disks for %v", bd.Name)
 		} else {
@@ -123,7 +161,7 @@ func GetAllTypes(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, []string, []s
 
 	}
 
-	return ParentDeviceNames, HolderDeviceNames, SlaveDeviceNames, nil
+	return ParentDeviceNames, PartitionNames, LoopNames, HolderDeviceNames, SlaveDeviceNames, Sparse, nil
 }
 
 // GetPartitions gets the partitions given a parent disk name

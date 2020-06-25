@@ -44,7 +44,7 @@ func TestGetAllTypes(t *testing.T) {
 		},
 		Items: mockblockDevices,
 	}
-	pd, _, _, err := GetAllTypes(n, mockDeviceList)
+	pd, _, _, _, _, _, err := GetAllTypes(n, mockDeviceList)
 	if err != nil {
 		t.Errorf("Getting parent disks failed %v", err)
 	}

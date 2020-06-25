@@ -18,18 +18,56 @@ package sanity
 
 import (
 	"context"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
-	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	"k8s.io/klog"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc"
 )
+
+// func init() {
+// 	var wg sync.WaitGroup
+
+// 	go func() {
+// 		wg.Add(1)
+// 		// Creating a grpc server, use WithInsecure to allow http connections
+// 		gs := grpc.NewServer()
+
+// 		// Creates an instance of Info
+// 		is := services.NewInfo()
+
+// 		// Creates an instance of Service
+// 		ss := services.NewService()
+
+// 		// Creates an instance of Node
+// 		ns := services.NewNode()
+
+// 		// This helps clients determine which services are available to call
+// 		reflection.Register(gs)
+
+// 		// Similar to registring handlers for http
+// 		protos.RegisterInfoServer(gs, is)
+
+// 		protos.RegisterISCSIServer(gs, ss)
+
+// 		protos.RegisterNodeServer(gs, ns)
+
+// 		l, err := net.Listen("tcp", "0.0.0.0:9090")
+// 		if err != nil {
+// 			klog.Errorf("Unable to listen %f", err)
+// 			os.Exit(1)
+// 		}
+
+// 		// Listen for requests
+// 		klog.Info("Starting server at 9090")
+// 		gs.Serve(l)
+
+// 	}()
+// }
 
 var _ = Describe("gRPC tests", func() {
 
@@ -65,35 +103,35 @@ var _ = Describe("gRPC tests", func() {
 	})
 	Context("gRPC services", func() {
 
-		It("iSCSI test", func() {
-			conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
-			Expect(err).NotTo(HaveOccurred())
-			defer conn.Close()
+		// It("iSCSI test", func() {
+		// 	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	defer conn.Close()
 
-			isc := protos.NewISCSIClient(conn)
-			ctx := context.Background()
-			null := &protos.Null{}
+		// 	isc := protos.NewISCSIClient(conn)
+		// 	ctx := context.Background()
+		// 	null := &protos.Null{}
 
-			By("Checking when ISCSI is disabled")
-			err = utils.RunCommandWithSudo("sudo systemctl stop iscsid")
-			Expect(err).NotTo(HaveOccurred())
-			res, err := isc.Status(ctx, null)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(res.GetStatus()).To(BeFalse())
+		// 	By("Checking when ISCSI is disabled")
+		// 	err = utils.RunCommandWithSudo("sudo systemctl stop iscsid")
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	res, err := isc.Status(ctx, null)
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	Expect(res.GetStatus()).To(BeFalse())
 
-			By("Checking when ISCSI is enabled ")
-			err = utils.RunCommandWithSudo("sudo systemctl enable iscsid")
-			Expect(err).NotTo(HaveOccurred())
-			err = utils.RunCommandWithSudo("sudo systemctl start iscsid")
-			Expect(err).NotTo(HaveOccurred())
-			res, err = isc.Status(ctx, null)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(res.GetStatus()).To(BeTrue())
+		// 	By("Checking when ISCSI is enabled ")
+		// 	err = utils.RunCommandWithSudo("sudo systemctl enable iscsid")
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	err = utils.RunCommandWithSudo("sudo systemctl start iscsid")
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	res, err = isc.Status(ctx, null)
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	Expect(res.GetStatus()).To(BeTrue())
 
-		})
+		// })
 
 		It("List Block Devices test", func() {
-			conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
 			Expect(err).NotTo(HaveOccurred())
 			defer conn.Close()
 
@@ -101,25 +139,30 @@ var _ = Describe("gRPC tests", func() {
 
 			ctx := context.Background()
 			null := &protos.Null{}
-			_, err = ns.ListBlockDevices(ctx, null)
+			nn, err := ns.Name(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
+			klog.Info(nn)
 
-			// utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
-			output, err := utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
+			bdl, err := ns.ListBlockDevices(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
-			fmt.Fprintf(GinkgoWriter, "Output of linking is %v", output)
+			klog.Info(bdl)
+
+			// // utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
+			// output, err := utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
+			// Expect(err).NotTo(HaveOccurred())
+			// fmt.Fprintf(GinkgoWriter, "Output of linking is %v", output)
 
 			// partitionName := physicalDisk.Name + "p1"
 			// utils.ExecCommandWithSudo("ln -s " + partitionName + "/dev/sdz1")
 			partitions := make([]string, 0)
-			// partitions = append(partitions, "/dev/sdz1")
+			partitions = append(partitions, "/dev/sda1")
 
-			output, err = utils.ExecCommandWithSudo("lsblk -a")
-			Expect(err).NotTo(HaveOccurred())
-			klog.Infof("Output of lsblk is %v", output)
+			// output, err := utils.ExecCommandWithSudo("lsblk -a")
+			// Expect(err).NotTo(HaveOccurred())
+			// klog.Infof("Output of lsblk is %v", output)
 
 			bd := &protos.BlockDevice{
-				Name:       "/dev/sdz",
+				Name:       "/dev/sda",
 				Type:       "Disk",
 				Partitions: partitions,
 			}
