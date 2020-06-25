@@ -23,51 +23,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
+	"github.com/openebs/node-disk-manager/integration_tests/utils"
 	"k8s.io/klog"
 
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"google.golang.org/grpc"
 )
-
-// func init() {
-// 	var wg sync.WaitGroup
-
-// 	go func() {
-// 		wg.Add(1)
-// 		// Creating a grpc server, use WithInsecure to allow http connections
-// 		gs := grpc.NewServer()
-
-// 		// Creates an instance of Info
-// 		is := services.NewInfo()
-
-// 		// Creates an instance of Service
-// 		ss := services.NewService()
-
-// 		// Creates an instance of Node
-// 		ns := services.NewNode()
-
-// 		// This helps clients determine which services are available to call
-// 		reflection.Register(gs)
-
-// 		// Similar to registring handlers for http
-// 		protos.RegisterInfoServer(gs, is)
-
-// 		protos.RegisterISCSIServer(gs, ss)
-
-// 		protos.RegisterNodeServer(gs, ns)
-
-// 		l, err := net.Listen("tcp", "0.0.0.0:9090")
-// 		if err != nil {
-// 			klog.Errorf("Unable to listen %f", err)
-// 			os.Exit(1)
-// 		}
-
-// 		// Listen for requests
-// 		klog.Info("Starting server at 9090")
-// 		gs.Serve(l)
-
-// 	}()
-// }
 
 var _ = Describe("gRPC tests", func() {
 
@@ -79,8 +40,7 @@ var _ = Describe("gRPC tests", func() {
 	BeforeEach(func() {
 		Expect(err).NotTo(HaveOccurred())
 		By("getting a new client set")
-		k8sClient, err = k8s.GetClientSet()
-		Expect(err).NotTo(HaveOccurred())
+		k8sClient, _ = k8s.GetClientSet()
 
 		By("creating the NDM Daemonset")
 		err = k8sClient.CreateNDMDaemonSet()
@@ -105,32 +65,32 @@ var _ = Describe("gRPC tests", func() {
 	})
 	Context("gRPC services", func() {
 
-		// It("iSCSI test", func() {
-		// 	conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	defer conn.Close()
+		It("iSCSI test", func() {
+			conn, err := grpc.Dial("0.0.0.0:9090", grpc.WithInsecure())
+			Expect(err).NotTo(HaveOccurred())
+			defer conn.Close()
 
-		// 	isc := protos.NewISCSIClient(conn)
-		// 	ctx := context.Background()
-		// 	null := &protos.Null{}
+			isc := protos.NewISCSIClient(conn)
+			ctx := context.Background()
+			null := &protos.Null{}
 
-		// 	By("Checking when ISCSI is disabled")
-		// 	err = utils.RunCommandWithSudo("sudo systemctl stop iscsid")
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	res, err := isc.Status(ctx, null)
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	Expect(res.GetStatus()).To(BeFalse())
+			By("Checking when ISCSI is disabled")
+			err = utils.RunCommandWithSudo("sudo systemctl stop iscsid")
+			Expect(err).NotTo(HaveOccurred())
+			res, err := isc.Status(ctx, null)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.GetStatus()).To(BeFalse())
 
-		// 	By("Checking when ISCSI is enabled ")
-		// 	err = utils.RunCommandWithSudo("sudo systemctl enable iscsid")
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	err = utils.RunCommandWithSudo("sudo systemctl start iscsid")
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	res, err = isc.Status(ctx, null)
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	Expect(res.GetStatus()).To(BeTrue())
+			By("Checking when ISCSI is enabled ")
+			err = utils.RunCommandWithSudo("sudo systemctl enable iscsid")
+			Expect(err).NotTo(HaveOccurred())
+			err = utils.RunCommandWithSudo("sudo systemctl start iscsid")
+			Expect(err).NotTo(HaveOccurred())
+			res, err = isc.Status(ctx, null)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.GetStatus()).To(BeTrue())
 
-		// })
+		})
 
 		It("List Block Devices test", func() {
 			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
@@ -141,27 +101,10 @@ var _ = Describe("gRPC tests", func() {
 
 			ctx := context.Background()
 			null := &protos.Null{}
-			nn, err := ns.Name(ctx, null)
-			Expect(err).NotTo(HaveOccurred())
-			klog.Info(nn)
 
 			res, err := ns.ListBlockDevices(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
 			klog.Info(res)
-
-			// // utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
-			// output, err := utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
-			// Expect(err).NotTo(HaveOccurred())
-			// fmt.Fprintf(GinkgoWriter, "Output of linking is %v", output)
-
-			// partitionName := physicalDisk.Name + "p1"
-			// utils.ExecCommandWithSudo("ln -s " + partitionName + "/dev/sdz1")
-			// partitions := make([]string, 0)
-			// partitions = append(partitions, "/dev/sda1")
-
-			// output, err := utils.ExecCommandWithSudo("lsblk -a")
-			// Expect(err).NotTo(HaveOccurred())
-			// klog.Infof("Output of lsblk is %v", output)
 
 			bd := &protos.BlockDevice{
 				Name: physicalDisk.Name,
@@ -180,5 +123,61 @@ var _ = Describe("gRPC tests", func() {
 
 		})
 
+		// It("List Block Device SMART test", func() {
+		// 	conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	defer conn.Close()
+
+		// 	ns := protos.NewNodeClient(conn)
+
+		// 	ctx := context.Background()
+		// 	bd := &protos.BlockDevice{
+		// 		Name: physicalDisk.Name,
+		// 		Type: "Disk",
+		// 	}
+
+		// 	res, err := ns.ListBlockDeviceDetails(ctx, bd)
+		// 	Expect(err).NotTo(HaveOccurred())
+		// 	klog.Info(res)
+		// })
+
+		It("Huge pages test", func() {
+			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+			Expect(err).NotTo(HaveOccurred())
+			defer conn.Close()
+
+			ns := protos.NewNodeClient(conn)
+
+			ctx := context.Background()
+			pages := &protos.Hugepages{
+				Pages: 512,
+			}
+
+			setRes, err := ns.SetHugepages(ctx, pages)
+			Expect(err).NotTo(HaveOccurred())
+			klog.Info(setRes)
+
+			Expect(setRes.GetResult()).To(BeTrue())
+
+		})
+		It("Rescan test", func() {
+			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
+			Expect(err).NotTo(HaveOccurred())
+			defer conn.Close()
+
+			ns := protos.NewNodeClient(conn)
+
+			ctx := context.Background()
+			null := &protos.Null{}
+
+			res, err := ns.Rescan(ctx, null)
+			Expect(err).NotTo(HaveOccurred())
+			klog.Info(res)
+
+			Expect(res.GetMsg()).To(Equal("Rescan initiated, check the logs for more info"))
+
+		})
+
 	})
+
 })
