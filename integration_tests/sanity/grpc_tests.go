@@ -79,7 +79,8 @@ var _ = Describe("gRPC tests", func() {
 	BeforeEach(func() {
 		Expect(err).NotTo(HaveOccurred())
 		By("getting a new client set")
-		k8sClient, _ = k8s.GetClientSet()
+		k8sClient, err = k8s.GetClientSet()
+		Expect(err).NotTo(HaveOccurred())
 
 		By("creating the NDM Daemonset")
 		err = k8sClient.CreateNDMDaemonSet()
@@ -100,6 +101,7 @@ var _ = Describe("gRPC tests", func() {
 		By("waiting for the pod to be removed")
 		ok := WaitForPodToBeDeletedEventually(DaemonSetPodPrefix)
 		Expect(ok).To(BeTrue())
+		err = nil
 	})
 	Context("gRPC services", func() {
 
@@ -143,9 +145,9 @@ var _ = Describe("gRPC tests", func() {
 			Expect(err).NotTo(HaveOccurred())
 			klog.Info(nn)
 
-			bdl, err := ns.ListBlockDevices(ctx, null)
+			res, err := ns.ListBlockDevices(ctx, null)
 			Expect(err).NotTo(HaveOccurred())
-			klog.Info(bdl)
+			klog.Info(res)
 
 			// // utils.ExecCommandWithSudo("partx -a " + physicalDisk.Name)
 			// output, err := utils.ExecCommandWithSudo("ln -s " + physicalDisk.Name + " /dev/sdz")
@@ -154,24 +156,27 @@ var _ = Describe("gRPC tests", func() {
 
 			// partitionName := physicalDisk.Name + "p1"
 			// utils.ExecCommandWithSudo("ln -s " + partitionName + "/dev/sdz1")
-			partitions := make([]string, 0)
-			partitions = append(partitions, "/dev/sda1")
+			// partitions := make([]string, 0)
+			// partitions = append(partitions, "/dev/sda1")
 
 			// output, err := utils.ExecCommandWithSudo("lsblk -a")
 			// Expect(err).NotTo(HaveOccurred())
 			// klog.Infof("Output of lsblk is %v", output)
 
 			bd := &protos.BlockDevice{
-				Name:       "/dev/sda",
-				Type:       "Disk",
-				Partitions: partitions,
+				Name: physicalDisk.Name,
+				Type: "Disk",
 			}
 			bds := make([]*protos.BlockDevice, 0)
 			bds = append(bds, bd)
 			_ = &protos.BlockDevices{
 				Blockdevices: bds,
 			}
-			Expect(nil).To(BeNil())
+			for _, bdn := range res.GetBlockdevices() {
+				if bdn.Name == bd.Name {
+					Expect(bd.Name).To(Equal(bd.Name))
+				}
+			}
 
 		})
 
