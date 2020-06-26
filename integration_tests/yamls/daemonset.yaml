@@ -27,14 +27,14 @@ spec:
       serviceAccountName: openebs-ndm-operator
       containers:
       - name: node-disk-manager
-        image: harshthakur/node-disk-manager:ci
+        image: openebs/node-disk-manager-amd64:ci
         args:
           - -v=2
 #          - --feature-gates="GPTBasedUUID"
         imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
-      # make udev database available inside container
+       # make udev database available inside container
         volumeMounts:
         - name: config
           mountPath: /host/node-disk-manager.config
