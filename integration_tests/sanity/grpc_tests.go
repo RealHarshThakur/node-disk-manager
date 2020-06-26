@@ -75,6 +75,7 @@ var _ = Describe("gRPC tests", func() {
 			null := &protos.Null{}
 
 			By("Checking when ISCSI is disabled")
+			// This needs to be done to be sure that iscsi is not running.
 			err = utils.RunCommandWithSudo("sudo systemctl stop iscsid")
 			Expect(err).NotTo(HaveOccurred())
 			res, err := isc.Status(ctx, null)
@@ -122,24 +123,6 @@ var _ = Describe("gRPC tests", func() {
 			}
 
 		})
-
-		// It("List Block Device SMART test", func() {
-		// 	conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	defer conn.Close()
-
-		// 	ns := protos.NewNodeClient(conn)
-
-		// 	ctx := context.Background()
-		// 	bd := &protos.BlockDevice{
-		// 		Name: physicalDisk.Name,
-		// 		Type: "Disk",
-		// 	}
-
-		// 	res, err := ns.ListBlockDeviceDetails(ctx, bd)
-		// 	Expect(err).NotTo(HaveOccurred())
-		// 	klog.Info(res)
-		// })
 
 		It("Huge pages test", func() {
 			conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure())

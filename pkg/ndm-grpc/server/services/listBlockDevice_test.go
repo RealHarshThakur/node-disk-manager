@@ -14,58 +14,76 @@ limitations under the License.
 package services
 
 import (
+	"reflect"
 	"testing"
-
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog"
 )
 
-// TestGetParentDisks tests the GetParentDisks function
-func TestGetAllTypes(t *testing.T) {
-
-	n := NewNode()
-
-	mockDevice := &apis.BlockDevice{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: make(map[string]string),
-			Name:   "dummy-blockdevice",
+// TestAddStringstoSlice get the method which adds only unique devices
+func TestAddStringstoSlice(t *testing.T) {
+	var testCases = []struct {
+		testName string
+		name     string
+		names    []string
+		exp      []string
+	}{
+		{
+			name:     "sdb1",
+			names:    nil,
+			testName: "Handling partitions of first disk",
+			exp:      []string{"sdb1"},
+		},
+		{
+			name:     "sdb1",
+			names:    []string{"sdc1", "sdc2"},
+			testName: "Handling partitions of two disks",
+			exp:      []string{"sdc1", "sdc2", "sdb1"},
+		},
+		{
+			name:     "sdd1",
+			names:    []string{"sdb1", "sdc1", "sdc2"},
+			testName: "Handling partitions of three disks",
+			exp:      []string{"sdb1", "sdc1", "sdc2", "sdd1"},
 		},
 	}
 
-	mockblockDevices := make([]apis.BlockDevice, 0)
-	mockblockDevices = append(mockblockDevices, *mockDevice)
+	for _, e := range testCases {
+		res := AddStringtoSlice(e.names, e.name)
+		if !reflect.DeepEqual(res, e.exp) {
+			t.Errorf(" Test failed : %v , expected : %v  , got : %v", e.testName, e.exp, res)
+		}
 
-	mockDeviceList := &apis.BlockDeviceList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "BlockDevice",
-			APIVersion: "",
-		},
-		Items: mockblockDevices,
 	}
-	pd, _, _, _, _, _, err := GetAllTypes(n, mockDeviceList)
-	if err != nil {
-		t.Errorf("Getting parent disks failed %v", err)
-	}
-	klog.Infof("Parent disks are: %v", pd)
+
 }
 
-// TestGetPartitions get the partitions of the block device
-func TestGetPartitions(t *testing.T) {
-
-	n := NewNode()
-
-	mockDevice := apis.BlockDevice{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: make(map[string]string),
-			Name:   "sda",
+// TestFilterPartitions tests the FilterPartitions
+func TestFilterPartitions(t *testing.T) {
+	var testCases = []struct {
+		testName string
+		name     string
+		names    []string
+		exp      []string
+	}{
+		{
+			name:     "sdb",
+			names:    []string{"sdb1", "sdb2", "sdc1"},
+			testName: "Filtering partitions of two disks",
+			exp:      []string{"sdb1", "sdb2"},
+		},
+		{
+			name:     "sdd",
+			names:    []string{"sdb1", "sdc1", "sdc2", "sdd1"},
+			testName: "Filtering partitions of three disks",
+			exp:      []string{"sdd1"},
 		},
 	}
 
-	partitions := GetPartitions(n, mockDevice.Name)
+	for _, e := range testCases {
+		res := FilterParitions(e.name, e.names)
+		if !reflect.DeepEqual(res, e.exp) {
+			t.Errorf(" Test failed : %v , expected : %v  , got : %v", e.testName, e.exp, res)
+		}
 
-	if len(partitions) != 0 {
-		klog.Infof("Partitions found are: %v", partitions)
 	}
+
 }

@@ -19,6 +19,7 @@ package sanity
 import (
 	"strings"
 
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 )
@@ -38,36 +39,36 @@ const (
 	DaemonSetPodPrefix = "node-disk-manager"
 )
 
-// var _ = Describe("NDM Setup Tests", func() {
+var _ = Describe("NDM Setup Tests", func() {
 
-// 	var err error
+	var err error
 
-// 	k8sClient, _ := k8s.GetClientSet()
-// 	Context("Checking for Daemonset pods in the cluster", func() {
+	k8sClient, _ := k8s.GetClientSet()
+	Context("Checking for Daemonset pods in the cluster", func() {
 
-// 		It("should have running ndm pod on each node after installation", func() {
+		It("should have running ndm pod on each node after installation", func() {
 
-// 			By("creating NDM daemonset")
-// 			err = k8sClient.CreateNDMDaemonSet()
-// 			Expect(err).NotTo(HaveOccurred())
+			By("creating NDM daemonset")
+			err = k8sClient.CreateNDMDaemonSet()
+			Expect(err).NotTo(HaveOccurred())
 
-// 			By("waiting for daemonset pods to be in running state")
-// 			ok := WaitForPodToBeRunningEventually(DaemonSetPodPrefix)
-// 			Expect(ok).To(BeTrue())
-// 		})
+			By("waiting for daemonset pods to be in running state")
+			ok := WaitForPodToBeRunningEventually(DaemonSetPodPrefix)
+			Expect(ok).To(BeTrue())
+		})
 
-// 		It("should not have any ndm pods after deletion", func() {
+		It("should not have any ndm pods after deletion", func() {
 
-// 			By("deleting NDM deamonset")
-// 			err = k8sClient.DeleteNDMDaemonSet()
-// 			Expect(err).NotTo(HaveOccurred())
+			By("deleting NDM deamonset")
+			err = k8sClient.DeleteNDMDaemonSet()
+			Expect(err).NotTo(HaveOccurred())
 
-// 			By("no of daemonset pods should be zero")
-// 			ok := WaitForPodToBeDeletedEventually(DaemonSetPodPrefix)
-// 			Expect(ok).To(BeTrue())
-// 		})
-// 	})
-// })
+			By("no of daemonset pods should be zero")
+			ok := WaitForPodToBeDeletedEventually(DaemonSetPodPrefix)
+			Expect(ok).To(BeTrue())
+		})
+	})
+})
 
 // WaitForPodToBeRunningEventually waits for 2 minutes for the given pod to be
 // in running state

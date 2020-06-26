@@ -14,6 +14,8 @@ limitations under the License.
 package services
 
 import (
+	"strings"
+
 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	protos "github.com/openebs/node-disk-manager/pkg/ndm-grpc/protos/ndm"
 	"k8s.io/klog"
@@ -41,9 +43,22 @@ func NewNode() *Node {
 
 type disks []protos.BlockDevice
 
+//AllDevices contains all the relationships and device types
+type AllDevices struct {
+	Parents    []string
+	Partitions []string
+	LVMs       []string
+	RAIDs      []string
+	Holders    []string
+	Slaves     []string
+	Loops      []string
+	Sparse     []string
+}
+
+var all AllDevices // This variable would contain all devices found in the cluster and their relationships
+
 // ListBlockDevices gives the status of iSCSI service
 func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos.BlockDevices, error) {
-
 	klog.Info("Listing block devices")
 
 	ctrl, err := controller.NewController()
@@ -70,36 +85,47 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 
 	blockDevices := make([]*protos.BlockDevice, 0)
 
-	// Currently, we have support for only parentNames(lsblk equivalent is a Disk)
-	// Reason to leave out partitions from this is to have a parent-partition relationship in response
-	parentNames, _, loopNames, _, _, sparseNames, err := GetAllTypes(n, blockDeviceList)
+	// Currently, we have support for only type Disk(parent), partition and sparse.
+	err = GetAllTypes(blockDeviceList)
 	if err != nil {
 		klog.Errorf("Error fetching Parent disks %v", err)
 	}
 
-	klog.Infof("Disks are : %v", parentNames)
-	klog.Infof("Loop devices are : %v", loopNames)
-	klog.Infof(" Sparse images are : %v", sparseNames)
-
-	for _, name := range parentNames {
+	for _, name := range all.Parents {
 
 		blockDevices = append(blockDevices, &protos.BlockDevice{
 			Name:       name,
 			Type:       "Disk",
-			Partitions: GetPartitions(n, name),
+			Partitions: FilterParitions(name, all.Partitions),
 		})
 	}
 
-	for _, name := range loopNames {
+	for _, name := range all.LVMs {
+
+		blockDevices = append(blockDevices, &protos.BlockDevice{
+			Name: name,
+			Type: "LVM",
+		})
+	}
+
+	for _, name := range all.RAIDs {
+
+		blockDevices = append(blockDevices, &protos.BlockDevice{
+			Name: name,
+			Type: "RAID",
+		})
+	}
+
+	for _, name := range all.Loops {
 
 		blockDevices = append(blockDevices, &protos.BlockDevice{
 			Name:       name,
 			Type:       "Loop",
-			Partitions: GetPartitions(n, name),
+			Partitions: FilterParitions(name, all.Partitions),
 		})
 	}
 
-	for _, name := range sparseNames {
+	for _, name := range all.Sparse {
 
 		blockDevices = append(blockDevices, &protos.BlockDevice{
 			Name: name,
@@ -112,22 +138,26 @@ func (n *Node) ListBlockDevices(ctx context.Context, null *protos.Null) (*protos
 	}, nil
 }
 
-// GetAllTypes takes a list of all block devices found on nodes and returns Parents, Partitions, Loop,  Holders, Slaves, Sparse( in the same order as slices)
-func GetAllTypes(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, []string, []string, []string, []string, []string, error) {
+// GetAllTypes takes a list of all block devices found on nodes and returns Parents, Partitions, LVMS, Holders, Slaves,Loop, Sparse(in the same order)
+func GetAllTypes(BL *v1alpha1.BlockDeviceList) error {
 	ParentDeviceNames := make([]string, 0)
 	HolderDeviceNames := make([]string, 0)
 	SlaveDeviceNames := make([]string, 0)
 	PartitionNames := make([]string, 0)
 	LoopNames := make([]string, 0)
 	SparseNames := make([]string, 0)
+	LVMNames := make([]string, 0)
+	RAIDNames := make([]string, 0)
 
 	for _, bd := range BL.Items {
-		klog.Infof("Devices are: %v ", bd.Spec.Path)
+		klog.Infof("Device %v of type %v ", bd.Spec.Path, bd.Spec.Details.DeviceType)
 
 		if bd.Spec.Details.DeviceType == "sparse" {
 			SparseNames = append(SparseNames, bd.Spec.Path)
 			continue
 		}
+
+		// GetDependents should not be called on sparse devices, hence this block comes later.
 		device := hierarchy.Device{Path: bd.Spec.Path}
 		depDevices, err := device.GetDependents()
 		if err != nil {
@@ -135,63 +165,118 @@ func GetAllTypes(n *Node, BL *v1alpha1.BlockDeviceList) ([]string, []string, []s
 			continue
 		}
 
-		if depDevices.Parent == "" {
-			klog.Infof(bd.Spec.Details.DeviceType)
-			klog.Infof("There are no parent disks for %v or this is a parent disk", bd.Spec.Path)
-			if bd.Spec.Details.DeviceType == "disk" {
-				klog.Info("This block device is a disk :  %v", bd.Spec.Path)
-				ParentDeviceNames = append(ParentDeviceNames, bd.Spec.Path)
-			} else if bd.Spec.Details.DeviceType == "loop" {
-				klog.Info("This block device is a Loop device: %v", bd.Spec.Path)
-				LoopNames = append(LoopNames, bd.Spec.Path)
-			}
-		} else {
-			for _, pn := range ParentDeviceNames {
-				if pn != depDevices.Parent {
-					ParentDeviceNames = append(ParentDeviceNames, depDevices.Parent)
-				}
-			}
-		}
-
-		if len(depDevices.Partitions) == 0 {
-			klog.Infof("There are partitions for %v", bd.Spec.Path)
-		} else {
+		if bd.Spec.Details.DeviceType == "loop" {
+			LoopNames = append(LoopNames, bd.Spec.Path)
 			PartitionNames = append(PartitionNames, depDevices.Partitions...)
+			continue
 		}
 
-		if len(depDevices.Holders) == 0 {
-			klog.Infof("There are no Holder disks for %v", bd.Spec.Path)
-		} else {
+		// This will run when GPTbasedUUID is enabled
+		if bd.Spec.Details.DeviceType == "partition" {
+			// We add the partition only if it doesn't already exist
+			PartitionNames = AddStringtoSlice(PartitionNames, bd.Spec.Path)
+			// We add the parent if it doesn't already exist
+			ParentDeviceNames = AddStringtoSlice(ParentDeviceNames, depDevices.Parent)
+			// Since partitions can also be holders
 			HolderDeviceNames = append(HolderDeviceNames, depDevices.Holders...)
+
+			// Since we found it's a partition and got it's dependents, we can continue with next device
+
+			continue
 		}
-		if len(depDevices.Slaves) == 0 {
-			klog.Infof("There are no Slave disks for %v", bd.Spec.Path)
-		} else {
+
+		// This will run when GPTbasedUUID is disabled
+		if bd.Spec.Details.DeviceType == "disk" {
+			// We add the parent if it doesn't exist
+			ParentDeviceNames = AddStringtoSlice(ParentDeviceNames, bd.Spec.Path)
+			// Since there isn't a way we come across this BD again, we can add partitions all at once without checking they exist already
+			PartitionNames = append(PartitionNames, depDevices.Partitions...)
+			continue
+		}
+
+		if bd.Spec.Details.DeviceType == "lvm" {
+			// Add the lvm if it doesn't already exist
+			LVMNames = AddStringtoSlice(LVMNames, bd.Spec.Path)
+			// if we encounter a lvm say dm-0, we add it's slaves(sda1, sdb1)
 			SlaveDeviceNames = append(SlaveDeviceNames, depDevices.Slaves...)
+			// if we encounter a lvm say dm-1 which is a partition of dm-0, then dm-0 would be a holder of dm-1
+			HolderDeviceNames = append(HolderDeviceNames, depDevices.Holders...)
+			continue
+		}
+
+		if strings.Contains(bd.Spec.Details.DeviceType, "raid") {
+			// Add the RAID if it doesn't already exist
+			RAIDNames = AddStringtoSlice(RAIDNames, bd.Spec.Path)
+			// if we encounter a RAID device md-0, we add it's slaves(sda1, sdb1)
+			SlaveDeviceNames = append(SlaveDeviceNames, depDevices.Slaves...)
+			// if we encounter a raid say md-1 which is a partition of md-0, then md-0 would be a holder of md-1
+			HolderDeviceNames = append(HolderDeviceNames, depDevices.Holders...)
+			continue
 		}
 
 	}
+	klog.Infof("Parent Devices found are: %v", ParentDeviceNames)
+	klog.Infof("Partitions  found are: %v", PartitionNames)
 
-	return ParentDeviceNames, PartitionNames, LoopNames, HolderDeviceNames, SlaveDeviceNames, SparseNames, nil
+	klog.Infof("LVM found are: %v", LVMNames)
+	klog.Infof("RAID disks found are: %v", RAIDNames)
+
+	klog.Infof("Holder Devices found are: %v", HolderDeviceNames)
+	klog.Infof(" Slaves found are: %v", SlaveDeviceNames)
+
+	klog.Infof("Loop Devices found are: %v", LoopNames)
+	klog.Infof("Sparse disks found are: %v", SparseNames)
+
+	all.Parents = ParentDeviceNames
+	all.Partitions = PartitionNames
+	all.Holders = HolderDeviceNames
+	all.Slaves = SlaveDeviceNames
+	all.LVMs = LVMNames
+	all.RAIDs = RAIDNames
+	all.Loops = LoopNames
+	all.Sparse = SparseNames
+	return nil
+
 }
 
-// GetPartitions gets the partitions given a parent disk name(Will change this later to filter out partitions given a disk name and partitions slice)
-func GetPartitions(n *Node, name string) []string {
+// AddStringtoSlice ensure there are no repeated devices
+func AddStringtoSlice(names []string, name string) []string {
 
-	device := hierarchy.Device{Path: name}
+	if len(names) == 0 {
+		names = append(names, name)
+		return names
+	}
+	shouldAppend := false
+	for _, n := range names {
+		if strings.Compare(n, name) == 0 {
+			shouldAppend = false
+			break
+		} else {
+			shouldAppend = true
+		}
+	}
+	if shouldAppend {
+		names = append(names, name)
+	}
+	return names
+}
 
-	depDevices, err := device.GetDependents()
-	if err != nil {
-		klog.Errorf("Error fetching dependents of the disk %v", err)
-		return nil
+// FilterParitions gets the name of the paritions given a block device.
+// Given a disk name /dev/sdb and slice of partition names : ["/dev/sdb1", "/dev/sdb2", "/dev/sdc1"],
+//it should return ["/dev/sdb1", "/dev/sdb2"]
+func FilterParitions(name string, pns []string) []string {
+	fpns := make([]string, 0)
+
+	if len(pns) == 0 {
+		pns = append(pns, name)
+		return pns
 	}
 
-	if len(depDevices.Partitions) == 0 {
-		klog.Infof("This device has no partitions")
-		return nil
+	for _, pn := range pns {
+		if strings.Contains(pn, name) {
+			fpns = append(fpns, pn)
+		}
 	}
-	partitonNames := depDevices.Partitions
 
-	return partitonNames
-
+	return fpns
 }

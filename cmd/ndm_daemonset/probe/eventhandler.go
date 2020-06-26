@@ -51,7 +51,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	bdAPIList, err := pe.Controller.ListBlockDeviceResource(true)
 	if err != nil {
 		klog.Error(err)
-		go pe.initOrErrorEvent()
+		go pe.Rescan()
 		return
 	}
 
@@ -95,7 +95,7 @@ func (pe *ProbeEvent) addBlockDeviceEvent(msg controller.EventMessage) {
 	}
 
 	if isErrorDuringUpdate {
-		go pe.initOrErrorEvent()
+		go pe.Rescan()
 	}
 }
 
@@ -142,22 +142,11 @@ func (pe *ProbeEvent) deleteBlockDeviceEvent(msg controller.EventMessage) {
 
 	// rescan only if GPT based UUID is disabled.
 	if !isDeactivated && !isGPTBasedUUIDEnabled {
-		go pe.initOrErrorEvent()
+		go pe.Rescan()
 	}
 }
 
-// initOrErrorEvent rescan system and update disk resource this is
-// used for initial setup and when any uid mismatch or error occurred.
-func (pe *ProbeEvent) initOrErrorEvent() {
-	udevProbe := newUdevProbe(pe.Controller)
-	defer udevProbe.free()
-	err := udevProbe.scan()
-	if err != nil {
-		klog.Error(err)
-	}
-}
-
-// Rescan sync etcd
+// Rescan syncs etcd and NDM
 func (pe *ProbeEvent) Rescan() error {
 	udevProbe := newUdevProbe(pe.Controller)
 	defer udevProbe.free()

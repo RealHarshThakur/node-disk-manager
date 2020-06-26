@@ -16,83 +16,83 @@ limitations under the License.
 
 package sanity
 
-// import (
-// 	. "github.com/onsi/ginkgo"
-// 	. "github.com/onsi/gomega"
-// 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
-// 	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-// )
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/openebs/node-disk-manager/integration_tests/k8s"
+	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+)
 
-// const (
-// 	// oldBDCFinalizer is the old string from which BDC should be updated
-// 	oldBDCFinalizer = "blockdeviceclaim.finalizer"
-// 	// newBDCFinalizer is the new string to which BDC to be updated
-// 	newBDCFinalizer = "openebs.io/bdc-protection"
-// )
+const (
+	// oldBDCFinalizer is the old string from which BDC should be updated
+	oldBDCFinalizer = "blockdeviceclaim.finalizer"
+	// newBDCFinalizer is the new string to which BDC to be updated
+	newBDCFinalizer = "openebs.io/bdc-protection"
+)
 
-// var _ = Describe("[upgrade] TEST PRE-UPGRADES IN NDM OPERATOR", func() {
-// 	var err error
-// 	k8sClient, _ := k8s.GetClientSet()
+var _ = Describe("[upgrade] TEST PRE-UPGRADES IN NDM OPERATOR", func() {
+	var err error
+	k8sClient, _ := k8s.GetClientSet()
 
-// 	Context("[finalizer] [rename] BDC with old finalizer", func() {
-// 		bdcName1 := "test-bdc1"
-// 		var blockDeviceClaim *apis.BlockDeviceClaim
+	Context("[finalizer] [rename] BDC with old finalizer", func() {
+		bdcName1 := "test-bdc1"
+		var blockDeviceClaim *apis.BlockDeviceClaim
 
-// 		BeforeEach(func() {
-// 			By("building BDC object")
-// 			blockDeviceClaim = k8s.NewBDC(bdcName1)
-// 			k8sClient, _ = k8s.GetClientSet()
-// 		})
+		BeforeEach(func() {
+			By("building BDC object")
+			blockDeviceClaim = k8s.NewBDC(bdcName1)
+			k8sClient, _ = k8s.GetClientSet()
+		})
 
-// 		AfterEach(func() {
-// 			// get the BDC
-// 			By("cleaning up BDC after test", func() {
-// 				By("getting the BDC from etcd")
-// 				blockDeviceClaim, err = k8sClient.GetBlockDeviceClaim(blockDeviceClaim.Namespace, blockDeviceClaim.Name)
-// 				Expect(err).NotTo(HaveOccurred())
+		AfterEach(func() {
+			// get the BDC
+			By("cleaning up BDC after test", func() {
+				By("getting the BDC from etcd")
+				blockDeviceClaim, err = k8sClient.GetBlockDeviceClaim(blockDeviceClaim.Namespace, blockDeviceClaim.Name)
+				Expect(err).NotTo(HaveOccurred())
 
-// 				// remove finalizer on BDC so that it can be deleted cleanly
-// 				By("remove finalizer on the BDC")
-// 				blockDeviceClaim.Finalizers = nil
-// 				err = k8sClient.UpdateBlockDeviceClaim(blockDeviceClaim)
-// 				Expect(err).NotTo(HaveOccurred())
+				// remove finalizer on BDC so that it can be deleted cleanly
+				By("remove finalizer on the BDC")
+				blockDeviceClaim.Finalizers = nil
+				err = k8sClient.UpdateBlockDeviceClaim(blockDeviceClaim)
+				Expect(err).NotTo(HaveOccurred())
 
-// 				// delete the BDC
-// 				By("deleting the BDC as part of cleanup")
-// 				err = k8sClient.DeleteBlockDeviceClaim(blockDeviceClaim)
-// 				Expect(err).NotTo(HaveOccurred())
-// 			})
-// 		})
+				// delete the BDC
+				By("deleting the BDC as part of cleanup")
+				err = k8sClient.DeleteBlockDeviceClaim(blockDeviceClaim)
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
 
-// 		It("has only the old BDC finalizer", func() {
-// 			By("adding the old finalizer to BDC")
-// 			blockDeviceClaim.Finalizers = append(blockDeviceClaim.ObjectMeta.Finalizers, oldBDCFinalizer)
-// 			blockDeviceClaim.Namespace = k8s.Namespace
-// 			blockDeviceClaim.Spec.BlockDeviceName = FakeBlockDevice
+		It("has only the old BDC finalizer", func() {
+			By("adding the old finalizer to BDC")
+			blockDeviceClaim.Finalizers = append(blockDeviceClaim.ObjectMeta.Finalizers, oldBDCFinalizer)
+			blockDeviceClaim.Namespace = k8s.Namespace
+			blockDeviceClaim.Spec.BlockDeviceName = FakeBlockDevice
 
-// 			// create the BDC with old finalizer
-// 			By("creating the BDC object in etcd")
-// 			err = k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
-// 			Expect(err).NotTo(HaveOccurred())
+			// create the BDC with old finalizer
+			By("creating the BDC object in etcd")
+			err = k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
+			Expect(err).NotTo(HaveOccurred())
 
-// 			// restart the ndm operator pod
-// 			By("restarting the NDM operator pod to simulate a fresh start")
-// 			err = k8sClient.RestartPod(OperatorPodPrefix)
-// 			Expect(err).NotTo(HaveOccurred())
+			// restart the ndm operator pod
+			By("restarting the NDM operator pod to simulate a fresh start")
+			err = k8sClient.RestartPod(OperatorPodPrefix)
+			Expect(err).NotTo(HaveOccurred())
 
-// 			By("waiting for pod to be in running state")
-// 			ok := WaitForPodToBeRunningEventually(OperatorPodPrefix)
-// 			Expect(ok).To(BeTrue())
+			By("waiting for pod to be in running state")
+			ok := WaitForPodToBeRunningEventually(OperatorPodPrefix)
+			Expect(ok).To(BeTrue())
 
-// 			// list BDC and check for new finalizer
-// 			By("checking for the new finalizer in the BDC")
-// 			Eventually(func() []string {
-// 				blockDeviceClaim, err = k8sClient.GetBlockDeviceClaim(blockDeviceClaim.Namespace, blockDeviceClaim.Name)
-// 				Expect(err).NotTo(HaveOccurred())
-// 				return blockDeviceClaim.Finalizers
-// 			}, 120, 5).Should(ContainElement(newBDCFinalizer))
+			// list BDC and check for new finalizer
+			By("checking for the new finalizer in the BDC")
+			Eventually(func() []string {
+				blockDeviceClaim, err = k8sClient.GetBlockDeviceClaim(blockDeviceClaim.Namespace, blockDeviceClaim.Name)
+				Expect(err).NotTo(HaveOccurred())
+				return blockDeviceClaim.Finalizers
+			}, 120, 5).Should(ContainElement(newBDCFinalizer))
 
-// 		})
+		})
 
-// 	})
-// })
+	})
+})

@@ -50,7 +50,13 @@ func (s *Service) Status(ctx context.Context, null *protos.Null) (*protos.ISCSIS
 
 	var found bool
 
-	checkISCSI(s, processList, &found)
+	for _, p := range processList {
+
+		if strings.Contains(p.Executable(), "iscsid") {
+			klog.Infof("%v is running with process id %v", p.Executable(), p.Pid())
+			found = true
+		}
+	}
 
 	if !found {
 		// Note: When using clients like grpcurl, they might return empty output as response when converting to json
@@ -59,17 +65,5 @@ func (s *Service) Status(ctx context.Context, null *protos.Null) (*protos.ISCSIS
 	}
 
 	return &protos.ISCSIStatus{Status: true}, nil
-
-}
-
-func checkISCSI(s *Service, processList []ps.Process, found *bool) {
-
-	for _, p := range processList {
-
-		if strings.Contains(p.Executable(), "iscsid") {
-			klog.Infof("%v is running with process id %v", p.Executable(), p.Pid())
-			*found = true
-		}
-	}
 
 }

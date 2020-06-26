@@ -16,151 +16,152 @@ limitations under the License.
 
 package sanity
 
-// import (
-// 	. "github.com/onsi/ginkgo"
-// 	. "github.com/onsi/gomega"
-// 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
-// 	"github.com/openebs/node-disk-manager/integration_tests/udev"
-// 	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
-// 	"strings"
-// )
+import (
+	"strings"
 
-// var _ = Describe("Device Discovery Tests", func() {
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/openebs/node-disk-manager/integration_tests/k8s"
+	"github.com/openebs/node-disk-manager/integration_tests/udev"
+	"github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+)
 
-// 	var (
-// 		err       error
-// 		k8sClient k8s.K8sClient
-// 	)
+var _ = Describe("Device Discovery Tests", func() {
 
-// 	BeforeEach(func() {
-// 		By("getting a new client set")
-// 		k8sClient, _ = k8s.GetClientSet()
+	var (
+		err       error
+		k8sClient k8s.K8sClient
+	)
 
-// 		By("creating the NDM Daemonset")
-// 		err = k8sClient.CreateNDMDaemonSet()
-// 		Expect(err).NotTo(HaveOccurred())
+	BeforeEach(func() {
+		By("getting a new client set")
+		k8sClient, _ = k8s.GetClientSet()
 
-// 		By("waiting for the daemonset pod to be running")
-// 		ok := WaitForPodToBeRunningEventually(DaemonSetPodPrefix)
-// 		Expect(ok).To(BeTrue())
+		By("creating the NDM Daemonset")
+		err = k8sClient.CreateNDMDaemonSet()
+		Expect(err).NotTo(HaveOccurred())
 
-// 	})
-// 	AfterEach(func() {
-// 		By("deleting the NDM deamonset")
-// 		err := k8sClient.DeleteNDMDaemonSet()
-// 		Expect(err).NotTo(HaveOccurred())
+		By("waiting for the daemonset pod to be running")
+		ok := WaitForPodToBeRunningEventually(DaemonSetPodPrefix)
+		Expect(ok).To(BeTrue())
 
-// 		By("waiting for the pod to be removed")
-// 		ok := WaitForPodToBeDeletedEventually(DaemonSetPodPrefix)
-// 		Expect(ok).To(BeTrue())
-// 	})
+	})
+	AfterEach(func() {
+		By("deleting the NDM deamonset")
+		err := k8sClient.DeleteNDMDaemonSet()
+		Expect(err).NotTo(HaveOccurred())
 
-// 	Context("Setup with no external disk", func() {
+		By("waiting for the pod to be removed")
+		ok := WaitForPodToBeDeletedEventually(DaemonSetPodPrefix)
+		Expect(ok).To(BeTrue())
+	})
 
-// 		It("should have one sparse block device", func() {
-// 			By("regenerating the client set")
-// 			k8sClient, _ = k8s.GetClientSet()
+	Context("Setup with no external disk", func() {
 
-// 			By("listing all blockdevices")
-// 			bdList, err := k8sClient.ListBlockDevices()
-// 			Expect(err).NotTo(HaveOccurred())
+		It("should have one sparse block device", func() {
+			By("regenerating the client set")
+			k8sClient, _ = k8s.GetClientSet()
 
-// 			noOfSparseBlockDevices := 0
-// 			// Get the no.of sparse block devices from block device list
-// 			By("counting the number of sparse BDs")
-// 			for _, blockDevice := range bdList.Items {
-// 				if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
-// 					Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
-// 					noOfSparseBlockDevices++
-// 				}
-// 			}
-// 			Expect(noOfSparseBlockDevices).To(Equal(1))
-// 		})
-// 	})
+			By("listing all blockdevices")
+			bdList, err := k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
 
-// 	Context("Setup with a single external disk already attached", func() {
-// 		var physicalDisk udev.Disk
-// 		By("creating and attaching a new disk")
-// 		physicalDisk = udev.NewDisk(DiskImageSize)
-// 		_ = physicalDisk.AttachDisk()
+			noOfSparseBlockDevices := 0
+			// Get the no.of sparse block devices from block device list
+			By("counting the number of sparse BDs")
+			for _, blockDevice := range bdList.Items {
+				if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
+					Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
+					noOfSparseBlockDevices++
+				}
+			}
+			Expect(noOfSparseBlockDevices).To(Equal(1))
+		})
+	})
 
-// 		It("should have 2 BlockDeviceCR", func() {
-// 			By("regenerating the client set")
-// 			k8sClient, _ = k8s.GetClientSet()
+	Context("Setup with a single external disk already attached", func() {
+		var physicalDisk udev.Disk
+		By("creating and attaching a new disk")
+		physicalDisk = udev.NewDisk(DiskImageSize)
+		_ = physicalDisk.AttachDisk()
 
-// 			// should have 2 block device CR, one for sparse disk and one for the
-// 			// external disk
-// 			By("listing all the BlockDevices")
-// 			bdList, err := k8sClient.ListBlockDevices()
-// 			Expect(err).NotTo(HaveOccurred())
+		It("should have 2 BlockDeviceCR", func() {
+			By("regenerating the client set")
+			k8sClient, _ = k8s.GetClientSet()
 
-// 			noOfSparseBlockDeviceCR := 0
-// 			noOfPhysicalBlockDeviceCR := 0
+			// should have 2 block device CR, one for sparse disk and one for the
+			// external disk
+			By("listing all the BlockDevices")
+			bdList, err := k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
 
-// 			// Get no.of sparse blockdevices and physical blockdevices from bdList
-// 			By("counting the number of active sparse and blockdevices")
-// 			for _, blockDevice := range bdList.Items {
-// 				if strings.Contains(blockDevice.Name, BlockDeviceName) && blockDevice.Spec.Path == physicalDisk.Name {
-// 					noOfPhysicalBlockDeviceCR++
-// 				} else if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
-// 					noOfSparseBlockDeviceCR++
-// 				}
-// 				Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
-// 			}
+			noOfSparseBlockDeviceCR := 0
+			noOfPhysicalBlockDeviceCR := 0
 
-// 			Expect(noOfSparseBlockDeviceCR).To(Equal(1))
-// 			Expect(noOfPhysicalBlockDeviceCR).To(Equal(1))
-// 		})
-// 		It("should have blockdeviceCR inactive when disk is detached", func() {
-// 			By("regenerating the client set")
-// 			k8sClient, _ = k8s.GetClientSet()
+			// Get no.of sparse blockdevices and physical blockdevices from bdList
+			By("counting the number of active sparse and blockdevices")
+			for _, blockDevice := range bdList.Items {
+				if strings.Contains(blockDevice.Name, BlockDeviceName) && blockDevice.Spec.Path == physicalDisk.Name {
+					noOfPhysicalBlockDeviceCR++
+				} else if strings.Contains(blockDevice.Name, SparseBlockDeviceName) {
+					noOfSparseBlockDeviceCR++
+				}
+				Expect(blockDevice.Status.State).To(Equal(v1alpha1.BlockDeviceActive))
+			}
 
-// 			By("detaching the disk")
-// 			err = physicalDisk.DetachDisk()
-// 			k8s.WaitForReconciliation()
+			Expect(noOfSparseBlockDeviceCR).To(Equal(1))
+			Expect(noOfPhysicalBlockDeviceCR).To(Equal(1))
+		})
+		It("should have blockdeviceCR inactive when disk is detached", func() {
+			By("regenerating the client set")
+			k8sClient, _ = k8s.GetClientSet()
 
-// 			By("listing all the blockdevices")
-// 			bdList, err := k8sClient.ListBlockDevices()
-// 			Expect(err).NotTo(HaveOccurred())
+			By("detaching the disk")
+			err = physicalDisk.DetachDisk()
+			k8s.WaitForReconciliation()
 
-// 			noOfPhysicalBlockDeviceCR := 0
+			By("listing all the blockdevices")
+			bdList, err := k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
 
-// 			By("checking for inactive blockdevice")
-// 			for _, bd := range bdList.Items {
-// 				if strings.Contains(bd.Name, BlockDeviceName) && bd.Spec.Path == physicalDisk.Name {
-// 					noOfPhysicalBlockDeviceCR++
-// 					Expect(bd.Status.State).To(Equal(v1alpha1.BlockDeviceInactive))
-// 				}
-// 			}
+			noOfPhysicalBlockDeviceCR := 0
 
-// 			By("verifying only block device was made inactive")
-// 			Expect(noOfPhysicalBlockDeviceCR).To(Equal(1))
-// 		})
-// 	})
-// 	Context("Setup with a single external disk attached at runtime", func() {
-// 		var physicalDisk udev.Disk
-// 		physicalDisk = udev.NewDisk(DiskImageSize)
+			By("checking for inactive blockdevice")
+			for _, bd := range bdList.Items {
+				if strings.Contains(bd.Name, BlockDeviceName) && bd.Spec.Path == physicalDisk.Name {
+					noOfPhysicalBlockDeviceCR++
+					Expect(bd.Status.State).To(Equal(v1alpha1.BlockDeviceInactive))
+				}
+			}
 
-// 		It("should have one additional BlockDevice CR after we attach a disk", func() {
-// 			By("regenerating the client set")
-// 			k8sClient, _ = k8s.GetClientSet()
+			By("verifying only block device was made inactive")
+			Expect(noOfPhysicalBlockDeviceCR).To(Equal(1))
+		})
+	})
+	Context("Setup with a single external disk attached at runtime", func() {
+		var physicalDisk udev.Disk
+		physicalDisk = udev.NewDisk(DiskImageSize)
 
-// 			By("listing all the blockdevices")
-// 			bdList, err := k8sClient.ListBlockDevices()
-// 			Expect(err).NotTo(HaveOccurred())
-// 			noOfBlockDeviceCR := len(bdList.Items)
+		It("should have one additional BlockDevice CR after we attach a disk", func() {
+			By("regenerating the client set")
+			k8sClient, _ = k8s.GetClientSet()
 
-// 			By("attaching the disk")
-// 			err = physicalDisk.AttachDisk()
-// 			Expect(err).NotTo(HaveOccurred())
-// 			k8s.WaitForReconciliation()
+			By("listing all the blockdevices")
+			bdList, err := k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
+			noOfBlockDeviceCR := len(bdList.Items)
 
-// 			By("listing the blockdevices again")
-// 			bdList, err = k8sClient.ListBlockDevices()
-// 			Expect(err).NotTo(HaveOccurred())
+			By("attaching the disk")
+			err = physicalDisk.AttachDisk()
+			Expect(err).NotTo(HaveOccurred())
+			k8s.WaitForReconciliation()
 
-// 			By("checking count of blockdevices")
-// 			Expect(len(bdList.Items)).To(Equal(noOfBlockDeviceCR + 1))
-// 		})
-// 	})
-// })
+			By("listing the blockdevices again")
+			bdList, err = k8sClient.ListBlockDevices()
+			Expect(err).NotTo(HaveOccurred())
+
+			By("checking count of blockdevices")
+			Expect(len(bdList.Items)).To(Equal(noOfBlockDeviceCR + 1))
+		})
+	})
+})

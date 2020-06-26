@@ -28,6 +28,9 @@ import (
 // SetHugepages service can set 2MB hugepages on a node
 func (n *Node) SetHugepages(ctx context.Context, h *protos.Hugepages) (*protos.HugepagesResult, error) {
 
+	//Note: Calling this method doesn't gurantee that the said number of pages will be set.
+	// This is because OS might not have the demanded memory. It would be best to check if this is satisfied with GetHugePages()
+
 	klog.Info("Setting Hugepages")
 
 	hugepages := protos.Hugepages{
