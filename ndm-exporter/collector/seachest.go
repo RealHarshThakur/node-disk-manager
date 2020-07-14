@@ -52,8 +52,23 @@ type SeachestCollector struct {
 // SeachestMetricData is the struct which holds the data from seachest library
 // corresponding to each blockdevice
 type SeachestMetricData struct {
-	SeachestIdentifier *seachest.Identifier
-	TempInfo           blockdevice.TemperatureInformation
+	SeachestIdentifier   *seachest.Identifier
+	TempInfo             blockdevice.TemperatureInformation
+	ModelNumber          string
+	SerialNumber         string
+	VendorID             string
+	FirmwareVersion      string
+	UUID                 string
+	Capacity             uint64
+	LogicalSectorSize    uint32
+	PhysicalSectorSize   uint32
+	RotationRate         uint16
+	Latency              float64
+	DriveType            string
+	TotalBytesRead       uint64
+	TotalBytesWritten    uint64
+	DeviceUtilization    float64
+	PercentEnduranceUsed float64
 }
 
 // NewSeachestMetricCollector creates a new instance of SeachestCollector which
@@ -66,8 +81,19 @@ func NewSeachestMetricCollector(c kubernetes.Client) prometheus.Collector {
 	}
 	sc.metrics.WithBlockDeviceCurrentTemperature().
 		WithBlockDeviceCurrentTemperatureValid().
+		WithBlockDeviceHighestTemperature().
+		WithBlockDeviceLowestTempearature().
 		WithRejectRequest().
-		WithErrorRequest()
+		WithErrorRequest().
+		WithBlockDeviceRotationalLatency().
+		WithBlockDeviceCapacity().
+		WithBlockDeviceLogicalSectorSize().
+		WithBlockDevicePhysicalSectorSize().
+		WithBlockDeviceRotationRate().
+		WithBlockDeviceTotalBytesRead().
+		WithBlockDeviceTotalBytesWritten().
+		WithBlockDeviceUtilizationRate().
+		WithBlockDevicePercentEnduranceUsed()
 	return sc
 }
 
@@ -109,6 +135,7 @@ func (sc *SeachestCollector) Collect(ch chan<- prometheus.Metric) {
 	// get list of blockdevices from etcd
 	blockDevices, err := sc.Client.ListBlockDevice()
 	if err != nil {
+		klog.Errorf("Listing block devices failed %v", err)
 		sc.metrics.IncErrorRequestCounter()
 		sc.collectErrors(ch)
 		return
@@ -170,7 +197,23 @@ func getMetricData(bds []blockdevice.BlockDevice) error {
 			continue
 		}
 		ok = true
-		bds[i].TemperatureInfo = sc.TempInfo
+
+		bds[i].DeviceAttributes.DriveType = sc.DriveType
+		bds[i].DeviceAttributes.FirmwareRevision = sc.FirmwareVersion
+		bds[i].DeviceAttributes.ModelNumber = sc.ModelNumber
+		bds[i].DeviceAttributes.Serial = sc.SerialNumber
+		bds[i].DeviceAttributes.Vendor = sc.VendorID
+
+		bds[i].SMARTInfo.TemperatureInfo = sc.TempInfo
+		bds[i].SMARTInfo.RotationalLatency = sc.Latency
+		bds[i].Capacity.Storage = sc.Capacity
+		bds[i].DeviceAttributes.LogicalBlockSize = sc.LogicalSectorSize
+		bds[i].SMARTInfo.RotationRate = sc.RotationRate
+		bds[i].SMARTInfo.TotalBytesRead = sc.TotalBytesRead
+		bds[i].SMARTInfo.TotalBytesWritten = sc.TotalBytesWritten
+		bds[i].SMARTInfo.UtilizationRate = sc.DeviceUtilization
+		bds[i].SMARTInfo.PercentEnduranceUsed = sc.PercentEnduranceUsed
+
 	}
 	if !ok {
 		return fmt.Errorf("getting seachest metrics for the blockdevices failed")
@@ -185,8 +228,38 @@ func (sc *SeachestMetricData) getSeachestData() error {
 		klog.Errorf("error fetching basic disk info using seachest. %s", seachest.SeachestErrors(err))
 		return fmt.Errorf("error getting seachest data for metrics. %s", seachest.SeachestErrors(err))
 	}
+
+	sc.DriveType = sc.SeachestIdentifier.DriveType(driveInfo)
+	sc.FirmwareVersion = sc.SeachestIdentifier.GetFirmwareRevision(driveInfo)
+	sc.ModelNumber = sc.SeachestIdentifier.GetModelNumber(driveInfo)
+	sc.SerialNumber = sc.SeachestIdentifier.GetSerialNumber(driveInfo)
+	sc.VendorID = sc.SeachestIdentifier.GetVendorID(driveInfo)
 	sc.TempInfo.TemperatureDataValid = sc.SeachestIdentifier.GetTemperatureDataValidStatus(driveInfo)
 	sc.TempInfo.CurrentTemperature = sc.SeachestIdentifier.GetCurrentTemperature(driveInfo)
+	sc.TempInfo.LowestTemperature = sc.SeachestIdentifier.GetLowestTemperature(driveInfo)
+	sc.TempInfo.HighestTemperature = sc.SeachestIdentifier.GetHighestTemperature(driveInfo)
+	sc.Latency = sc.SeachestIdentifier.GetRotationalLatency(driveInfo)
+	sc.Capacity = sc.SeachestIdentifier.GetCapacity(driveInfo)
+	sc.LogicalSectorSize = sc.SeachestIdentifier.GetLogicalSectorSize(driveInfo)
+	sc.PhysicalSectorSize = sc.SeachestIdentifier.GetPhysicalSectorSize(driveInfo)
+	sc.RotationRate = sc.SeachestIdentifier.GetRotationRate(driveInfo)
+	sc.TotalBytesRead = sc.SeachestIdentifier.GetTotalBytesRead(driveInfo)
+	sc.TotalBytesWritten = sc.SeachestIdentifier.GetTotalBytesWritten(driveInfo)
+	sc.DeviceUtilization = sc.SeachestIdentifier.GetDeviceUtilizationRate(driveInfo)
+	sc.PercentEnduranceUsed = sc.SeachestIdentifier.GetPercentEnduranceUsed(driveInfo)
+
+	klog.Infof("Rotation rate is %v", sc.RotationRate)
+	klog.Infof("Rotational latency is %v", sc.Latency)
+	klog.Infof("Current temperature is %v", sc.TempInfo.CurrentTemperature)
+	klog.Infof("Lowest temperature is %v", sc.TempInfo.LowestTemperature)
+	klog.Infof("Highest temperature is %v", sc.TempInfo.HighestTemperature)
+	klog.Infof("Capacity is %v", sc.Capacity)
+	klog.Infof("Logical sector size is %v", sc.LogicalSectorSize)
+	klog.Infof("Physical sector size is %v", sc.PhysicalSectorSize)
+	klog.Infof("Total bytes read is %v", sc.TotalBytesRead)
+	klog.Infof("Total bytes written is %v", sc.TotalBytesWritten)
+	klog.Infof("Device utilization rate is %v", sc.DeviceUtilization)
+	klog.Infof("Endurance used is %v", sc.PercentEnduranceUsed)
 
 	return nil
 }
@@ -199,10 +272,26 @@ func (sc *SeachestCollector) setMetricData(blockdevices []blockdevice.BlockDevic
 		sc.metrics.WithBlockDeviceUUID(bd.UUID).
 			WithBlockDevicePath(bd.DevPath).
 			WithBlockDeviceHostName(bd.NodeAttributes[blockdevice.HostName]).
-			WithBlockDeviceNodeName(bd.NodeAttributes[blockdevice.NodeName])
-
+			WithBlockDeviceNodeName(bd.NodeAttributes[blockdevice.NodeName]).
+			WithBlockDeviceModelNumber(bd.DeviceAttributes.ModelNumber).
+			WithBlockDeviceModel(bd.DeviceAttributes.Model).
+			WithBlockDeviceSerialNumber(bd.DeviceAttributes.Serial).
+			WithBlockDeviceFirmwareVersion(bd.DeviceAttributes.FirmwareRevision).
+			WithBlockDeviceDriveType(bd.DeviceAttributes.DriveType)
 		// sets the metrics
-		sc.metrics.SetBlockDeviceCurrentTemperature(bd.TemperatureInfo.CurrentTemperature).
-			SetBlockDeviceCurrentTemperatureValid(bd.TemperatureInfo.TemperatureDataValid)
+		sc.metrics.SetBlockDeviceCurrentTemperature(bd.SMARTInfo.TemperatureInfo.CurrentTemperature).
+			SetBlockDeviceHighestTemperature(bd.SMARTInfo.TemperatureInfo.HighestTemperature).
+			SetBlockDeviceLowestTemperature(bd.SMARTInfo.TemperatureInfo.LowestTemperature).
+			SetBlockDeviceCurrentTemperatureValid(bd.SMARTInfo.TemperatureInfo.TemperatureDataValid).
+			SetBlockDeviceRotationalLatency(bd.SMARTInfo.RotationalLatency).
+			SetBlockDeviceCapacity(bd.Capacity.Storage).
+			SetBlockDeviceLogicalSectorSize(bd.DeviceAttributes.LogicalBlockSize).
+			SetBlockDevicePhysicalSectorSize(bd.DeviceAttributes.PhysicalBlockSize).
+			SetBlockDeviceRotationalRate(bd.SMARTInfo.RotationRate).
+			SetBlockDeviceUtilizationRate(bd.SMARTInfo.UtilizationRate).
+			SetBlockDeviceTotalBytesRead(bd.SMARTInfo.TotalBytesRead)
+		// SetBlockDeviceTotalBytesWritten(bd.SMARTInfo.TotalBytesWritten).
+		// SetBlockDevicePercentEnduranceUsed(bd.SMARTInfo.PercentEnduranceUsed)
+
 	}
 }

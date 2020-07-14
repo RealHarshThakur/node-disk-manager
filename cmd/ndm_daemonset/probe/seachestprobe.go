@@ -149,17 +149,17 @@ func (scp *seachestProbe) FillBlockDeviceDetails(blockDevice *blockdevice.BlockD
 		klog.V(4).Infof("Disk: %s PercentEnduranceUsed:%f filled by seachest.", d.Path, d.PercentEnduranceUsed)
 	}*/
 
-	blockDevice.TemperatureInfo.TemperatureDataValid = seachestProbe.
+	blockDevice.SMARTInfo.TemperatureInfo.TemperatureDataValid = seachestProbe.
 		SeachestIdentifier.GetTemperatureDataValidStatus(driveInfo)
 	klog.V(4).Infof("Disk: %s TemperatureDataValid:%t filled by seachest.",
-		blockDevice.DevPath, blockDevice.TemperatureInfo.TemperatureDataValid)
+		blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.TemperatureDataValid)
 
-	if blockDevice.TemperatureInfo.TemperatureDataValid == true {
-		blockDevice.TemperatureInfo.CurrentTemperature = seachestProbe.
+	if blockDevice.SMARTInfo.TemperatureInfo.TemperatureDataValid == true {
+		blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperature = seachestProbe.
 			SeachestIdentifier.GetCurrentTemperature(driveInfo)
 
 		klog.V(4).Infof("Disk: %s CurrentTemperature:%d filled by seachest.",
-			blockDevice.DevPath, blockDevice.TemperatureInfo.CurrentTemperature)
+			blockDevice.DevPath, blockDevice.SMARTInfo.TemperatureInfo.CurrentTemperature)
 
 		/*d.TemperatureInfo.HighestValid = seachestProbe.
 			SeachestIdentifier.GetHighestValid(driveInfo)

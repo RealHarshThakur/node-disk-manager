@@ -119,11 +119,35 @@ type BlockDevice struct {
 	// DependentDevices stores the dependent devices
 	DependentDevices DependentBlockDevices
 
-	// TemperatureInfo stores the temperature information of the drive
-	TemperatureInfo TemperatureInformation
+	SMARTInfo SMARTStats
 
 	// Status contains the state of the blockdevice
 	Status Status
+}
+
+//SMARTStats represents stats from SMART spec and data fetched/calucalted by data from seachest
+type SMARTStats struct {
+
+	// RotationRate stores the rotation rate of a block device(HDD)
+	RotationRate uint16
+
+	// RotationalLatency stores the latency of the drive
+	RotationalLatency float64
+
+	// TemperatureInfo stores the temperature information of the drive
+	TemperatureInfo TemperatureInformation
+
+	// TotalBytesRead stores the total amount of bytes read by a block device
+	TotalBytesRead uint64
+
+	// TotalBytesWritten stores the total amount of bytes read by a block device
+	TotalBytesWritten uint64
+
+	// UtilizationRate stores the rate of utilization of a block device
+	UtilizationRate float64
+
+	// PercentEnduranceUsed stores the endurance used in percent
+	PercentEnduranceUsed float64
 }
 
 // Identifier represents the various identifiers that can be used to
@@ -236,6 +260,9 @@ type DeviceAttribute struct {
 	// Eg : PersistentDisk, Virtaul_disk, QEMU_HARDDISK, EphemeralDisk
 	Model string
 
+	//Model number of the device
+	ModelNumber string
+
 	// Serial number of the device
 	Serial string
 
@@ -265,6 +292,12 @@ type TemperatureInformation struct {
 
 	// CurrentTemperature is the temperature of the drive in celsius
 	CurrentTemperature int16
+
+	// LowestTemperature is the temperature of the drive in celsius
+	LowestTemperature int16
+
+	// HighestTemperature is the temperature of the drive in celsius
+	HighestTemperature int16
 }
 
 // PartitionInformation contains information related to the partition, if this
