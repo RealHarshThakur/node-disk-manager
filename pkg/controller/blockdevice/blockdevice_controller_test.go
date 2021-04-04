@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"testing"
 
+	openebsv1alpha1 "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
-	openebsv1alpha1 "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -32,8 +32,8 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var (

@@ -1,0 +1,28 @@
+domain: openebs.io
+layout: go.kubebuilder.io/v3
+multigroup: true
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: node-disk-manager
+repo: github.com/openebs/node-disk-manager
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: openebs.io
+  group: blockdevice
+  kind: BlockDevice
+  path: github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: openebs.io
+  group: blockdeviceclaim
+  kind: BlockDeviceClaim
+  path: github.com/openebs/node-disk-manager/apis/blockdeviceclaim/v1alpha1
+  version: v1alpha1
+version: "3"

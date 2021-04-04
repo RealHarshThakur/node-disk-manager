@@ -19,7 +19,7 @@ package verify
 import (
 	"fmt"
 
-	apis "github.com/openebs/node-disk-manager/pkg/apis/openebs/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 )
 
