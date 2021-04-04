@@ -26,8 +26,8 @@ import (
 func buildBlockDeviceCRD() (*apiext.CustomResourceDefinition, error) {
 	crdBuilder := crds.NewBuilder()
 	crdBuilder.WithName(apis.BlockDeviceResourceName).
-		WithGroup(apis.GroupName).
-		WithVersion(apis.APIVersion).
+		WithGroup(apis.GroupVersion.Group).
+		WithVersion(apis.GroupVersion.Group).
 		WithScope(apiext.NamespaceScoped).
 		WithKind(apis.BlockDeviceResourceKind).
 		WithListKind(apis.BlockDeviceResourceListKind).
@@ -47,8 +47,8 @@ func buildBlockDeviceCRD() (*apiext.CustomResourceDefinition, error) {
 func buildBlockDeviceClaimCRD() (*apiext.CustomResourceDefinition, error) {
 	crdBuilder := crds.NewBuilder()
 	crdBuilder.WithName(apis.BlockDeviceClaimResourceName).
-		WithGroup(apis.GroupName).
-		WithVersion(apis.APIVersion).
+		WithGroup(apis.GroupVersion.Group).
+		WithVersion(apis.GroupVersion.Version).
 		WithScope(apiext.NamespaceScoped).
 		WithKind(apis.BlockDeviceClaimResourceKind).
 		WithListKind(apis.BlockDeviceClaimResourceListKind).

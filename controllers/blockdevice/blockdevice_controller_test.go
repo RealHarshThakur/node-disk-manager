@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"testing"
 
-	openebsv1alpha1 "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	bdapis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -61,7 +61,7 @@ func TestDeviceController(t *testing.T) {
 	cl, s := CreateFakeClient(t)
 
 	// Create a ReconcileBlockDevice object with the scheme and fake client.
-	r := &ReconcileBlockDevice{client: cl, scheme: s, recorder: fakeRecorder}
+	r := &BlockDeviceReconciler{Client: cl, Scheme: s, recorder: fakeRecorder}
 
 	// Mock request to simulate Reconcile() being called on an event for a
 	// watched resource .
@@ -82,8 +82,8 @@ func TestDeviceController(t *testing.T) {
 		t.Log("reconcile did not requeue request as expected")
 	}
 
-	deviceInstance := &openebsv1alpha1.BlockDevice{}
-	err = r.client.Get(context.TODO(), req.NamespacedName, deviceInstance)
+	deviceInstance := &bdapis.BlockDevice{}
+	err = r.Client.Get(context.TODO(), req.NamespacedName, deviceInstance)
 	if err != nil {
 		t.Errorf("get deviceInstance : (%v)", err)
 	}
@@ -96,8 +96,8 @@ func TestDeviceController(t *testing.T) {
 	}
 }
 
-func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
-	device := &openebsv1alpha1.BlockDevice{}
+func GetFakeDeviceObject() *bdapis.BlockDevice {
+	device := &bdapis.BlockDevice{}
 	labels := map[string]string{ndm.NDMManagedKey: ndm.TrueString}
 
 	TypeMeta := metav1.TypeMeta{
@@ -110,18 +110,18 @@ func GetFakeDeviceObject() *openebsv1alpha1.BlockDevice {
 		Namespace: namespace,
 	}
 
-	Spec := openebsv1alpha1.DeviceSpec{
+	Spec := bdapis.DeviceSpec{
 		Path: "dev/disk-fake-path",
-		Capacity: openebsv1alpha1.DeviceCapacity{
+		Capacity: bdapis.DeviceCapacity{
 			Storage: capacity, // Set blockdevice size.
 		},
-		DevLinks:    make([]openebsv1alpha1.DeviceDevLink, 0),
+		DevLinks:    make([]bdapis.DeviceDevLink, 0),
 		Partitioned: ndm.NDMNotPartitioned,
 	}
 
 	device.ObjectMeta = ObjectMeta
 	device.TypeMeta = TypeMeta
-	device.Status.ClaimState = openebsv1alpha1.BlockDeviceUnclaimed
+	device.Status.ClaimState = bdapis.BlockDeviceUnclaimed
 	device.Status.State = ndm.NDMActive
 	device.Spec = Spec
 	return device
@@ -131,7 +131,7 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 
 	deviceR := GetFakeDeviceObject()
 
-	deviceList := &openebsv1alpha1.BlockDeviceList{
+	deviceList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "",
@@ -140,8 +140,8 @@ func CreateFakeClient(t *testing.T) (client.Client, *runtime.Scheme) {
 
 	s := scheme.Scheme
 
-	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceR)
-	s.AddKnownTypes(openebsv1alpha1.SchemeGroupVersion, deviceList)
+	s.AddKnownTypes(bdapis.GroupVersion, deviceR)
+	s.AddKnownTypes(bdapis.GroupVersion, deviceList)
 
 	fakeNdmClient := fake.NewFakeClient()
 	if fakeNdmClient == nil {

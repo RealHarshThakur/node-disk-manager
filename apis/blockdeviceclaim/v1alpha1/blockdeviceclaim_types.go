@@ -36,12 +36,12 @@ type BlockDeviceClaim struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   BlockDeviceClaimSpec   `json:"spec,omitempty"`
-	Status BlockDeviceClaimStatus `json:"status,omitempty"`
+	Spec   DeviceClaimSpec   `json:"spec,omitempty"`
+	Status DeviceClaimStatus `json:"status,omitempty"`
 }
 
-// BlockDeviceClaimSpec defines the request details for a BlockDevice
-type BlockDeviceClaimSpec struct {
+// DeviceClaimSpec defines the request details for a BlockDevice
+type DeviceClaimSpec struct {
 
 	// Selector is used to find block devices to be considered for claiming
 	// +optional
@@ -49,7 +49,7 @@ type BlockDeviceClaimSpec struct {
 
 	// Resources will help with placing claims on Capacity, IOPS
 	// +optional
-	Resources BlockDeviceClaimResources `json:"resources"`
+	Resources DeviceClaimResources `json:"resources"`
 
 	// DeviceType represents the type of drive like SSD, HDD etc.,
 	// +optional
@@ -63,7 +63,7 @@ type BlockDeviceClaimSpec struct {
 
 	// Details of the device to be claimed
 	// +optional
-	Details BlockDeviceClaimDetails `json:"deviceClaimDetails,omitempty"`
+	Details DeviceClaimDetails `json:"deviceClaimDetails,omitempty"`
 
 	// BlockDeviceName is the reference to the block-device backing this claim
 	// +optional
@@ -75,16 +75,21 @@ type BlockDeviceClaimSpec struct {
 	BlockDeviceNodeAttributes BlockDeviceNodeAttributes `json:"blockDeviceNodeAttributes,omitempty"`
 }
 
-// BlockDeviceClaimResources defines the request by the claim, eg, Capacity, IOPS
-type BlockDeviceClaimResources struct {
+// DeviceClaimResources defines the request by the claim, eg, Capacity, IOPS
+type DeviceClaimResources struct {
 	// Requests describes the minimum resources required. eg: if storage resource of 10G is
 	// requested minimum capacity of 10G should be available
 	//TODO for validating
 	Requests v1.ResourceList `json:"requests"`
 }
 
-// BlockDeviceClaimDetails defines the details of the block device that should be claimed
-type BlockDeviceClaimDetails struct {
+const (
+	// ResourceStorage defines the storage required as v1.Quantity
+	ResourceStorage v1.ResourceName = "storage"
+)
+
+// DeviceClaimDetails defines the details of the block device that should be claimed
+type DeviceClaimDetails struct {
 	// BlockVolumeMode represents whether to claim a device in Block mode or Filesystem mode.
 	// These are use cases of BlockVolumeMode:
 	// 1) Not specified: VolumeMode check will not be effective
@@ -126,31 +131,31 @@ type BlockDeviceNodeAttributes struct {
 	HostName string `json:"hostName,omitempty"`
 }
 
-// BlockDeviceClaimStatus defines the observed state of BlockDeviceClaim
-type BlockDeviceClaimStatus struct {
+// DeviceClaimStatus defines the observed state of BlockDeviceClaim
+type DeviceClaimStatus struct {
 	// Phase represents the current phase of the claim
-	Phase BlockDeviceClaimPhase `json:"phase"`
+	Phase DeviceClaimPhase `json:"phase"`
 }
 
-// BlockDeviceClaimPhase is a typed string for phase field of BlockDeviceClaim.
-type BlockDeviceClaimPhase string
+// DeviceClaimPhase is a typed string for phase field of BlockDeviceClaim.
+type DeviceClaimPhase string
 
 // BlockDeviceClaim CR, when created pass through phases before it got some Devices Assigned.
 // Given below table, have all phases which BlockDeviceClaim CR can go before it is marked done.
 const (
 	// BlockDeviceClaimStatusEmpty represents that the BlockDeviceClaim was just created.
-	BlockDeviceClaimStatusEmpty BlockDeviceClaimPhase = ""
+	BlockDeviceClaimStatusEmpty DeviceClaimPhase = ""
 
 	// BlockDeviceClaimStatusPending represents BlockDeviceClaim has not been assigned devices yet. Rather
 	// search is going on for matching devices.
-	BlockDeviceClaimStatusPending BlockDeviceClaimPhase = "Pending"
+	BlockDeviceClaimStatusPending DeviceClaimPhase = "Pending"
 
 	// BlockDeviceClaimStatusInvalidCapacity represents BlockDeviceClaim has invalid capacity request i.e. 0/-1
 	// Deprecated
-	BlockDeviceClaimStatusInvalidCapacity BlockDeviceClaimPhase = "Invalid Capacity Request"
+	BlockDeviceClaimStatusInvalidCapacity DeviceClaimPhase = "Invalid Capacity Request"
 
 	// BlockDeviceClaimStatusDone represents BlockDeviceClaim has been assigned backing blockdevice and ready for use.
-	BlockDeviceClaimStatusDone BlockDeviceClaimPhase = "Bound"
+	BlockDeviceClaimStatusDone DeviceClaimPhase = "Bound"
 )
 
 // +kubebuilder:object:root=true

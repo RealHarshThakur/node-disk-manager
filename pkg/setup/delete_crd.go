@@ -24,7 +24,7 @@ import (
 )
 
 func (sc Config) deleteDiskCRD() error {
-	diskCRDName := "disks" + "." + v1alpha1.GroupName
+	diskCRDName := "disks" + "." + v1alpha1.GroupVersion.Group
 	return sc.deleteCRD(diskCRDName)
 }
 

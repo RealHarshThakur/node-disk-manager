@@ -22,7 +22,8 @@ import (
 	"strings"
 	"time"
 
-	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	bdapis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	bdcapis "github.com/openebs/node-disk-manager/apis/blockdeviceclaim/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
@@ -70,8 +71,8 @@ func (c K8sClient) ListNodeStatus() (map[string]string, error) {
 }
 
 // ListBlockDevices returns list of BlockDeviceCR in the cluster
-func (c K8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
-	bdList := &apis.BlockDeviceList{
+func (c K8sClient) ListBlockDevices() (*bdapis.BlockDeviceList, error) {
+	bdList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -87,8 +88,8 @@ func (c K8sClient) ListBlockDevices() (*apis.BlockDeviceList, error) {
 }
 
 // GetBlockDeviceClaim from Namespace and name
-func (c K8sClient) GetBlockDeviceClaim(NameSpace, Name string) (*apis.BlockDeviceClaim, error) {
-	bdc := &apis.BlockDeviceClaim{}
+func (c K8sClient) GetBlockDeviceClaim(NameSpace, Name string) (*bdcapis.BlockDeviceClaim, error) {
+	bdc := &bdcapis.BlockDeviceClaim{}
 	err := c.RunTimeClient.Get(context.TODO(), client.ObjectKey{
 		Name:      Name,
 		Namespace: NameSpace,
@@ -100,8 +101,8 @@ func (c K8sClient) GetBlockDeviceClaim(NameSpace, Name string) (*apis.BlockDevic
 }
 
 // ListBlockDeviceClaims returns list of BlockDeviceClaims in the cluster
-func (c K8sClient) ListBlockDeviceClaims() (*apis.BlockDeviceClaimList, error) {
-	bdcList := &apis.BlockDeviceClaimList{
+func (c K8sClient) ListBlockDeviceClaims() (*bdcapis.BlockDeviceClaimList, error) {
+	bdcList := &bdcapis.BlockDeviceClaimList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDeviceClaim",
 			APIVersion: "openebs.io/v1alpha1",
@@ -130,14 +131,14 @@ func (c K8sClient) RestartPod(name string) error {
 
 // NewBDC creates a sample device claim which can be used for
 // claiming a block device.
-func NewBDC(bdcName string) *apis.BlockDeviceClaim {
-	bdcResources := apis.DeviceClaimResources{
+func NewBDC(bdcName string) *bdcapis.BlockDeviceClaim {
+	bdcResources := bdcapis.DeviceClaimResources{
 		Requests: make(map[corev1.ResourceName]resource.Quantity),
 	}
-	bdcSpec := apis.DeviceClaimSpec{
+	bdcSpec := bdcapis.DeviceClaimSpec{
 		Resources: bdcResources,
 	}
-	bdc := &apis.BlockDeviceClaim{
+	bdc := &bdcapis.BlockDeviceClaim{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDeviceClaim",
 			APIVersion: "openebs.io/v1alpha1",
@@ -252,19 +253,19 @@ func (c K8sClient) DeleteDeployment(deployment appsv1.Deployment) error {
 }
 
 // CreateBlockDeviceClaim creates a BDC
-func (c K8sClient) CreateBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
+func (c K8sClient) CreateBlockDeviceClaim(claim *bdcapis.BlockDeviceClaim) error {
 	err := c.RunTimeClient.Create(context.Background(), claim)
 	return err
 }
 
 // UpdateBlockDeviceClaim updates the BDC
-func (c K8sClient) UpdateBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
+func (c K8sClient) UpdateBlockDeviceClaim(claim *bdcapis.BlockDeviceClaim) error {
 	err := c.RunTimeClient.Update(context.Background(), claim)
 	return err
 }
 
 // DeleteBlockDeviceClaim deletes a BDC
-func (c K8sClient) DeleteBlockDeviceClaim(claim *apis.BlockDeviceClaim) error {
+func (c K8sClient) DeleteBlockDeviceClaim(claim *bdcapis.BlockDeviceClaim) error {
 	err := c.RunTimeClient.Delete(context.Background(), claim)
 	return err
 }

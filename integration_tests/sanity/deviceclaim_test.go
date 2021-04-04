@@ -19,11 +19,14 @@ package sanity
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+
+	"os"
+
+	bdapis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	bdcapis "github.com/openebs/node-disk-manager/apis/blockdeviceclaim/v1alpha1"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 	"github.com/openebs/node-disk-manager/integration_tests/udev"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"os"
 )
 
 const (
@@ -73,7 +76,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 	})
 	Context("Claim Block Device when matching BD is not available", func() {
 		var bdcName string
-		var blockDeviceClaim *apis.BlockDeviceClaim
+		var blockDeviceClaim *bdcapis.BlockDeviceClaim
 		BeforeEach(func() {
 			By("building a new BDC")
 			bdcName = "test-bdc-1"
@@ -88,7 +91,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		It("BD is not available on the host", func() {
 			blockDeviceClaim.Spec.HostName = FakeHostName
 			blockDeviceClaim.Namespace = k8s.Namespace
-			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCAvailableCapacity
+			blockDeviceClaim.Spec.Resources.Requests[bdcapis.ResourceStorage] = BDCAvailableCapacity
 
 			By("creating BDC object")
 			err = k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
@@ -103,7 +106,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("check whether BDC is in Pending state")
 			for _, bdc := range bdcList.Items {
 				if bdc.Name == bdcName {
-					Expect(bdc.Status.Phase).To(Equal(apis.BlockDeviceClaimStatusPending))
+					Expect(bdc.Status.Phase).To(Equal(bdcapis.BlockDeviceClaimStatusPending))
 				}
 			}
 		})
@@ -111,7 +114,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		It("BD with resource requirement is not available on the host", func() {
 			blockDeviceClaim.Spec.HostName = HostName
 			blockDeviceClaim.Namespace = k8s.Namespace
-			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCUnavailableCapacity
+			blockDeviceClaim.Spec.Resources.Requests[bdcapis.ResourceStorage] = BDCUnavailableCapacity
 
 			By("creating BDC object with unavailable capacity")
 			err = k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
@@ -126,7 +129,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("check whether BDC is in Pending state")
 			for _, bdc := range bdcList.Items {
 				if bdc.Name == bdcName {
-					Expect(bdc.Status.Phase).To(Equal(apis.BlockDeviceClaimStatusPending))
+					Expect(bdc.Status.Phase).To(Equal(bdcapis.BlockDeviceClaimStatusPending))
 				}
 			}
 		})
@@ -134,7 +137,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 
 	Context("Claim Block Device when matching BD is available", func() {
 		var bdcName string
-		var blockDeviceClaim *apis.BlockDeviceClaim
+		var blockDeviceClaim *bdcapis.BlockDeviceClaim
 		BeforeEach(func() {
 			By("building a new BDC")
 			bdcName = "test-bdc-1"
@@ -159,7 +162,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		It("has matching BD on the node", func() {
 			blockDeviceClaim.Spec.HostName = HostName
 			blockDeviceClaim.Namespace = k8s.Namespace
-			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCAvailableCapacity
+			blockDeviceClaim.Spec.Resources.Requests[bdcapis.ResourceStorage] = BDCAvailableCapacity
 
 			By("creating BDC with matching node")
 			err = k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
@@ -177,7 +180,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			for _, bdc := range bdcList.Items {
 				if bdc.Name == bdcName {
 					bdName = bdc.Spec.BlockDeviceName
-					Expect(bdc.Status.Phase).To(Equal(apis.BlockDeviceClaimStatusDone))
+					Expect(bdc.Status.Phase).To(Equal(bdcapis.BlockDeviceClaimStatusDone))
 				}
 			}
 
@@ -189,7 +192,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("checking if the corresponding BD is claimed")
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceClaimed))
+					Expect(bd.Status.ClaimState).To(Equal(bdapis.BlockDeviceClaimed))
 				}
 			}
 
@@ -197,7 +200,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 	})
 	Context("Unclaiming a block device ", func() {
 		var bdcName string
-		var blockDeviceClaim *apis.BlockDeviceClaim
+		var blockDeviceClaim *bdcapis.BlockDeviceClaim
 		BeforeEach(func() {
 			By("building a new BDC")
 			bdcName = "test-bdc-1"
@@ -206,7 +209,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 		It("unclaims a BD when BDC is deleted", func() {
 			blockDeviceClaim.Spec.HostName = HostName
 			blockDeviceClaim.Namespace = k8s.Namespace
-			blockDeviceClaim.Spec.Resources.Requests[apis.ResourceStorage] = BDCAvailableCapacity
+			blockDeviceClaim.Spec.Resources.Requests[bdcapis.ResourceStorage] = BDCAvailableCapacity
 
 			By("creating BDC object")
 			err := k8sClient.CreateBlockDeviceClaim(blockDeviceClaim)
@@ -224,7 +227,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			for _, bdc := range bdcList.Items {
 				if bdc.Name == bdcName {
 					bdName = bdc.Spec.BlockDeviceName
-					Expect(bdc.Status.Phase).To(Equal(apis.BlockDeviceClaimStatusDone))
+					Expect(bdc.Status.Phase).To(Equal(bdcapis.BlockDeviceClaimStatusDone))
 				}
 			}
 
@@ -236,7 +239,7 @@ var _ = Describe("BlockDevice Claim tests", func() {
 			By("checking if the corresponding BD is claimed")
 			for _, bd := range bdList.Items {
 				if bd.Name == bdName {
-					Expect(bd.Status.ClaimState).To(Equal(apis.BlockDeviceClaimed))
+					Expect(bd.Status.ClaimState).To(Equal(bdapis.BlockDeviceClaimed))
 				}
 			}
 
@@ -253,8 +256,8 @@ var _ = Describe("BlockDevice Claim tests", func() {
 				if bd.Name == bdName {
 					// BlockDevice can be in either released or unclaimed
 					// depending on the time required for cleanup
-					Expect(bd.Status.ClaimState).To(Or(Equal(apis.BlockDeviceReleased),
-						Equal(apis.BlockDeviceUnclaimed)))
+					Expect(bd.Status.ClaimState).To(Or(Equal(bdapis.BlockDeviceReleased),
+						Equal(bdapis.BlockDeviceUnclaimed)))
 				}
 			}
 

@@ -19,7 +19,9 @@ package blockdevice
 import (
 	"strings"
 
-	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	bdapis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	bdcapis "github.com/openebs/node-disk-manager/apis/blockdeviceclaim/v1alpha1"
+
 	"github.com/openebs/node-disk-manager/blockdevice"
 	"github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
@@ -60,7 +62,7 @@ const (
 )
 
 // filterFunc is the func type for the filter functions
-type filterFunc func(original *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList
+type filterFunc func(original *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList
 
 var filterFuncMap = map[string]filterFunc{
 	FilterActive:                filterActive,
@@ -76,7 +78,7 @@ var filterFuncMap = map[string]filterFunc{
 }
 
 // ApplyFilters apply the filter specified in the filterkeys on the given BD List,
-func (c *Config) ApplyFilters(bdList *apis.BlockDeviceList, filterKeys ...string) *apis.BlockDeviceList {
+func (c *Config) ApplyFilters(bdList *bdapis.BlockDeviceList, filterKeys ...string) *bdapis.BlockDeviceList {
 	filteredList := bdList
 	for _, key := range filterKeys {
 		filteredList = filterFuncMap[key](filteredList, c.ClaimSpec)
@@ -85,8 +87,8 @@ func (c *Config) ApplyFilters(bdList *apis.BlockDeviceList, filterKeys ...string
 }
 
 // filterActive filters out active Blockdevices from the BDList
-func filterActive(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
-	filteredBDList := &apis.BlockDeviceList{
+func filterActive(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -102,8 +104,8 @@ func filterActive(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) 
 }
 
 // filterUnclaimed returns only unclaimed devices
-func filterUnclaimed(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
-	filteredBDList := &apis.BlockDeviceList{
+func filterUnclaimed(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -111,7 +113,7 @@ func filterUnclaimed(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpe
 	}
 
 	for _, bd := range originalBD.Items {
-		if bd.Status.ClaimState == apis.BlockDeviceUnclaimed {
+		if bd.Status.ClaimState == bdapis.BlockDeviceUnclaimed {
 			filteredBDList.Items = append(filteredBDList.Items, bd)
 		}
 	}
@@ -119,14 +121,14 @@ func filterUnclaimed(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpe
 }
 
 // filterDeviceType returns only BDs which match the device type
-func filterDeviceType(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
+func filterDeviceType(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
 
 	// if no device type is specified, filter will not be effective
 	if spec.DeviceType == "" {
 		return originalBD
 	}
 
-	filteredBDList := &apis.BlockDeviceList{
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -142,7 +144,7 @@ func filterDeviceType(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSp
 }
 
 // filterVolumeMode returns only BDs which matches the specified volume mode
-func filterVolumeMode(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
+func filterVolumeMode(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
 
 	volumeMode := spec.Details.BlockVolumeMode
 
@@ -151,7 +153,7 @@ func filterVolumeMode(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSp
 		return originalBD
 	}
 
-	filteredBDList := &apis.BlockDeviceList{
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -160,13 +162,13 @@ func filterVolumeMode(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSp
 
 	for _, bd := range originalBD.Items {
 		switch volumeMode {
-		case apis.VolumeModeBlock:
+		case bdcapis.VolumeModeBlock:
 			// if blockvolume mode, FS and Mountpoint should be empty
 			if bd.Spec.FileSystem.Type != "" || bd.Spec.FileSystem.Mountpoint != "" {
 				continue
 			}
 
-		case apis.VolumeModeFileSystem:
+		case bdcapis.VolumeModeFileSystem:
 			// in FSVolume Mode,
 			// In BD: FS and Mountpoint should not be empty. If empty the BD
 			// is removed by filter
@@ -185,8 +187,8 @@ func filterVolumeMode(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSp
 }
 
 // filterBlockDeviceName returns a single BD in the list, which matches the BDName
-func filterBlockDeviceName(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
-	filteredBDList := &apis.BlockDeviceList{
+func filterBlockDeviceName(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -203,8 +205,8 @@ func filterBlockDeviceName(originalBD *apis.BlockDeviceList, spec *apis.DeviceCl
 }
 
 // filterResourceStorage gets the devices which match the storage resource requirement
-func filterResourceStorage(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
-	filteredBDList := &apis.BlockDeviceList{
+func filterResourceStorage(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -223,8 +225,8 @@ func filterResourceStorage(originalBD *apis.BlockDeviceList, spec *apis.DeviceCl
 }
 
 // filterOutSparseBlockDevice returns only non sparse devices
-func filterOutSparseBlockDevice(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
-	filteredBDList := &apis.BlockDeviceList{
+func filterOutSparseBlockDevice(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -239,14 +241,14 @@ func filterOutSparseBlockDevice(originalBD *apis.BlockDeviceList, spec *apis.Dev
 	return filteredBDList
 }
 
-func filterNodeName(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
+func filterNodeName(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
 
 	// if node name is not given in BDC, this filter will not work
 	if len(spec.BlockDeviceNodeAttributes.NodeName) == 0 {
 		return originalBD
 	}
 
-	filteredBDList := &apis.BlockDeviceList{
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -264,10 +266,10 @@ func filterNodeName(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec
 // filterBlockDeviceTag is used to filter out BlockDevices which do not have the
 // block-device-tag label. This filter works on a block device list which has
 // already been filtered by the given selector.
-func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
+func filterBlockDeviceTag(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
 
 	/// remove BDs with empty tag in all cases
-	emptyTagFilteredBDList := &apis.BlockDeviceList{
+	emptyTagFilteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -309,7 +311,7 @@ func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceCla
 	blockDeviceTagDoesNotExistSelector =
 		blockDeviceTagDoesNotExistSelector.Add(*blockDeviceTagRequirement)
 
-	filteredBDList := &apis.BlockDeviceList{
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
@@ -327,8 +329,8 @@ func filterBlockDeviceTag(originalBD *apis.BlockDeviceList, spec *apis.DeviceCla
 
 // filterOutLegacyAnnotation removes all blockdevices which has the legacy annotation
 // TODO @akhilerm add test cases for this function.
-func filterOutLegacyAnnotation(originalBD *apis.BlockDeviceList, spec *apis.DeviceClaimSpec) *apis.BlockDeviceList {
-	filteredBDList := &apis.BlockDeviceList{
+func filterOutLegacyAnnotation(originalBD *bdapis.BlockDeviceList, spec *bdcapis.DeviceClaimSpec) *bdapis.BlockDeviceList {
+	filteredBDList := &bdapis.BlockDeviceList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",

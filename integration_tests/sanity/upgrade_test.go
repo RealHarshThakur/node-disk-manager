@@ -19,7 +19,7 @@ package sanity
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	apis "github.com/openebs/node-disk-manager/apis/blockdeviceclaim/v1alpha1"
 	"github.com/openebs/node-disk-manager/integration_tests/k8s"
 )
 

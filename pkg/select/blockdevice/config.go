@@ -17,7 +17,7 @@ limitations under the License.
 package blockdevice
 
 import (
-	"github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	"github.com/openebs/node-disk-manager/apis/blockdeviceclaim/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

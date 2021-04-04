@@ -17,7 +17,7 @@ limitations under the License.
 package controller
 
 import (
-	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	bdapis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
 	bd "github.com/openebs/node-disk-manager/blockdevice"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -67,8 +67,8 @@ type FSInfo struct {
 
 // ToDevice convert deviceInfo struct to api.BlockDevice
 // type which will be pushed to etcd
-func (di *DeviceInfo) ToDevice() apis.BlockDevice {
-	blockDevice := apis.BlockDevice{}
+func (di *DeviceInfo) ToDevice() bdapis.BlockDevice {
+	blockDevice := bdapis.BlockDevice{}
 	blockDevice.Spec = di.getDeviceSpec()
 	blockDevice.ObjectMeta = di.getObjectMeta()
 	blockDevice.TypeMeta = di.getTypeMeta()
@@ -109,9 +109,9 @@ func (di *DeviceInfo) getTypeMeta() metav1.TypeMeta {
 // getStatus returns DeviceStatus struct which contains
 // state of BlockDevice resource. It is used to populate data
 // of BlockDevice struct of BlockDevice CR.
-func (di *DeviceInfo) getStatus() apis.DeviceStatus {
-	deviceStatus := apis.DeviceStatus{
-		ClaimState: apis.BlockDeviceUnclaimed,
+func (di *DeviceInfo) getStatus() bdapis.DeviceStatus {
+	deviceStatus := bdapis.DeviceStatus{
+		ClaimState: bdapis.BlockDeviceUnclaimed,
 		State:      NDMActive,
 	}
 	return deviceStatus
@@ -122,8 +122,8 @@ func (di *DeviceInfo) getStatus() apis.DeviceStatus {
 // - capacity - (size,logical sector size ...)
 // - devlinks - (by-id , by-path links)
 // It is used to populate data of BlockDevice struct of blockdevice CR.
-func (di *DeviceInfo) getDeviceSpec() apis.DeviceSpec {
-	deviceSpec := apis.DeviceSpec{}
+func (di *DeviceInfo) getDeviceSpec() bdapis.DeviceSpec {
+	deviceSpec := bdapis.DeviceSpec{}
 	deviceSpec.NodeAttributes.NodeName = di.NodeAttributes[NodeNameKey]
 	deviceSpec.Path = di.getPath()
 	deviceSpec.Details = di.getDeviceDetails()
@@ -143,8 +143,8 @@ func (di *DeviceInfo) getPath() string {
 // getDeviceDetails returns DeviceDetails struct which contains primary
 // and static info of blockdevice resource like model, serial, vendor etc.
 // It is used to populate data of BlockDevice struct which of BlockDevice CR.
-func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
-	deviceDetails := apis.DeviceDetails{}
+func (di *DeviceInfo) getDeviceDetails() bdapis.DeviceDetails {
+	deviceDetails := bdapis.DeviceDetails{}
 	deviceDetails.Model = di.Model
 	deviceDetails.Serial = di.Serial
 	deviceDetails.Vendor = di.Vendor
@@ -164,8 +164,8 @@ func (di *DeviceInfo) getDeviceDetails() apis.DeviceDetails {
 // -logical sector size (in bytes)
 // -physical sector size (in bytes)
 // It is used to populate data of BlockDevice struct of BlockDevice CR.
-func (di *DeviceInfo) getDeviceCapacity() apis.DeviceCapacity {
-	capacity := apis.DeviceCapacity{}
+func (di *DeviceInfo) getDeviceCapacity() bdapis.DeviceCapacity {
+	capacity := bdapis.DeviceCapacity{}
 	capacity.Storage = di.Capacity
 	capacity.LogicalSectorSize = di.LogicalBlockSize
 	capacity.PhysicalSectorSize = di.PhysicalBlockSize
@@ -175,17 +175,17 @@ func (di *DeviceInfo) getDeviceCapacity() apis.DeviceCapacity {
 // getDiskLinks returns DeviceDevLink struct which contains
 // soft links like by-id ,by-path link. It is used to populate
 // data of BlockDevice struct of BlockDevice CR.
-func (di *DeviceInfo) getDeviceLinks() []apis.DeviceDevLink {
-	devLinks := make([]apis.DeviceDevLink, 0)
+func (di *DeviceInfo) getDeviceLinks() []bdapis.DeviceDevLink {
+	devLinks := make([]bdapis.DeviceDevLink, 0)
 	if len(di.ByIdDevLinks) != 0 {
-		byIDLinks := apis.DeviceDevLink{
+		byIDLinks := bdapis.DeviceDevLink{
 			Kind:  "by-id",
 			Links: di.ByIdDevLinks,
 		}
 		devLinks = append(devLinks, byIDLinks)
 	}
 	if len(di.ByPathDevLinks) != 0 {
-		byPathLinks := apis.DeviceDevLink{
+		byPathLinks := bdapis.DeviceDevLink{
 			Kind:  "by-path",
 			Links: di.ByPathDevLinks,
 		}
@@ -194,8 +194,8 @@ func (di *DeviceInfo) getDeviceLinks() []apis.DeviceDevLink {
 	return devLinks
 }
 
-func (fs *FSInfo) getFileSystemInfo() apis.FileSystemInfo {
-	fsInfo := apis.FileSystemInfo{}
+func (fs *FSInfo) getFileSystemInfo() bdapis.FileSystemInfo {
+	fsInfo := bdapis.FileSystemInfo{}
 	fsInfo.Type = fs.FileSystem
 	fsInfo.Mountpoint = fs.MountPoint
 	return fsInfo

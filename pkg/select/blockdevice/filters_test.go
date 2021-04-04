@@ -18,11 +18,13 @@ package blockdevice
 
 import (
 	"fmt"
-	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	"testing"
+
+	bdapis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+	bdcapis "github.com/openebs/node-disk-manager/apis/blockdeviceclaim/v1alpha1"
 	"github.com/openebs/node-disk-manager/db/kubernetes"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -140,7 +142,7 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 
 	type args struct {
 		bdLabelList BDLabelList
-		spec        *apis.DeviceClaimSpec
+		spec        *bdcapis.DeviceClaimSpec
 	}
 	tests := map[string]struct {
 		args          args
@@ -149,21 +151,21 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 		"no labels on any BD and no selector on BDC": {
 			args: args{
 				bdLabelList: bdLabelList1,
-				spec:        &apis.DeviceClaimSpec{},
+				spec:        &bdcapis.DeviceClaimSpec{},
 			},
 			wantedNoofBDs: 6,
 		},
 		"all BDs have same device tag label and no selector": {
 			args: args{
 				bdLabelList: bdLabelList2,
-				spec:        &apis.DeviceClaimSpec{},
+				spec:        &bdcapis.DeviceClaimSpec{},
 			},
 			wantedNoofBDs: 0,
 		},
 		"all BDs have same device tag label and selector for tag": {
 			args: args{
 				bdLabelList: bdLabelList2,
-				spec: &apis.DeviceClaimSpec{
+				spec: &bdcapis.DeviceClaimSpec{
 					Selector: &v1.LabelSelector{
 						MatchLabels: map[string]string{kubernetes.BlockDeviceTagLabel: "X"},
 					},
@@ -174,7 +176,7 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 		"all BDs have same device tag label and custom label used in selector": {
 			args: args{
 				bdLabelList: bdLabelList2,
-				spec: &apis.DeviceClaimSpec{
+				spec: &bdcapis.DeviceClaimSpec{
 					Selector: &v1.LabelSelector{
 						MatchLabels: map[string]string{"ndm.io/test": "test"},
 					},
@@ -185,7 +187,7 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 		"some BDs with tag and some without tag, combined with no selector": {
 			args: args{
 				bdLabelList: bdLabelList3,
-				spec: &apis.DeviceClaimSpec{
+				spec: &bdcapis.DeviceClaimSpec{
 					Selector: &v1.LabelSelector{},
 				},
 			},
@@ -194,7 +196,7 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 		"some BDs with tag key, but with empty selector": {
 			args: args{
 				bdLabelList: bdLabelList4,
-				spec: &apis.DeviceClaimSpec{
+				spec: &bdcapis.DeviceClaimSpec{
 					Selector: &v1.LabelSelector{},
 				},
 			},
@@ -203,7 +205,7 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 		"some BDs with tag key, with selector matching empty tag": {
 			args: args{
 				bdLabelList: bdLabelList4,
-				spec: &apis.DeviceClaimSpec{
+				spec: &bdcapis.DeviceClaimSpec{
 					Selector: &v1.LabelSelector{
 						MatchLabels: map[string]string{kubernetes.BlockDeviceTagLabel: ""},
 					},
@@ -214,7 +216,7 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 		"some BDs with tag key, with selector matching tag exists operation": {
 			args: args{
 				bdLabelList: bdLabelList4,
-				spec: &apis.DeviceClaimSpec{
+				spec: &bdcapis.DeviceClaimSpec{
 					Selector: &v1.LabelSelector{
 						MatchExpressions: []v1.LabelSelectorRequirement{
 							{
@@ -240,13 +242,13 @@ func TestFilterBlockDeviceTag(t *testing.T) {
 	}
 }
 
-func createFakeBlockDeviceList(labelList BDLabelList, noOfBDs int) *apis.BlockDeviceList {
-	bdListAPI := &apis.BlockDeviceList{
+func createFakeBlockDeviceList(labelList BDLabelList, noOfBDs int) *bdapis.BlockDeviceList {
+	bdListAPI := &bdapis.BlockDeviceList{
 		TypeMeta: v1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",
 		},
-		Items: []apis.BlockDevice{},
+		Items: []bdapis.BlockDevice{},
 	}
 	for i := 0; i < noOfBDs; i++ {
 		bdName := fmt.Sprint("bd", i)
@@ -255,8 +257,8 @@ func createFakeBlockDeviceList(labelList BDLabelList, noOfBDs int) *apis.BlockDe
 	return bdListAPI
 }
 
-func createFakeBlockDevice(name string, label map[string]string) apis.BlockDevice {
-	bdAPI := apis.BlockDevice{
+func createFakeBlockDevice(name string, label map[string]string) bdapis.BlockDevice {
+	bdAPI := bdapis.BlockDevice{
 		TypeMeta: v1.TypeMeta{
 			Kind:       "BlockDevice",
 			APIVersion: "openebs.io/v1alpha1",

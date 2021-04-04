@@ -43,12 +43,12 @@ type BlockDevice struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   BlockDeviceSpec   `json:"spec,omitempty"`
-	Status BlockDeviceStatus `json:"status,omitempty"`
+	Spec   DeviceSpec   `json:"spec,omitempty"`
+	Status DeviceStatus `json:"status,omitempty"`
 }
 
-// BlockDeviceSpec defines the properties and runtime status of a BlockDevice
-type BlockDeviceSpec struct {
+// DeviceSpec defines the properties and runtime status of a BlockDevice
+type DeviceSpec struct {
 
 	// AggregateDevice was intended to store the hierachical
 	// information in cases of LVM. However this is currently
@@ -212,8 +212,8 @@ type DeviceDevLink struct {
 	Links []string `json:"links,omitempty"`
 }
 
-// BlockDeviceStatus defines the observed state of BlockDevice
-type BlockDeviceStatus struct {
+// DeviceStatus defines the observed state of BlockDevice
+type DeviceStatus struct {
 	// ClaimState represents the claim state of the block device
 	// +kubebuilder:validation:Enum:=Claimed;Unclaimed;Released
 	ClaimState DeviceClaimState `json:"claimState"`

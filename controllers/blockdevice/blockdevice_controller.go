@@ -31,13 +31,14 @@ import (
 
 	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
 	ndm "github.com/openebs/node-disk-manager/cmd/ndm_daemonset/controller"
+	controllerutil "github.com/openebs/node-disk-manager/controllers/util"
 	"github.com/openebs/node-disk-manager/pkg/cleaner"
 	"github.com/openebs/node-disk-manager/pkg/util"
 )
 
 // BlockDeviceReconciler reconciles a BlockDevice object
 type BlockDeviceReconciler struct {
-	client.Client
+	Client   client.Client
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
 	recorder record.EventRecorder

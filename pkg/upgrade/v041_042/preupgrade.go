@@ -18,7 +18,8 @@ package v041_042
 
 import (
 	"context"
-	apis "github.com/openebs/node-disk-manager/apis/blockdevice/v1alpha1"
+
+	apis "github.com/openebs/node-disk-manager/apis/blockdeviceclaim/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
